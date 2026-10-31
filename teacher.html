@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+<title>Teacher Dashboard | Learning Styles | ATH Campus</title>
+
+<style>
+:root {
+  --primary: #174a8b; --secondary: #2878c8; --accent: #f0a42b;
+  --background: #f3f6fb; --text: #1d2939; --muted: #667085;
+  --border: #dce3ed; --success: #16865b; --danger: #c0392b;
+  --c-visual: #3987d5; --c-auditory: #8e62bd; --c-reading: #159b82; --c-kinesthetic: #e49a2d; --c-multimodal: #667085;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: var(--background); color: var(--text); line-height: 1.55; }
+header { background: linear-gradient(120deg, #123766, #2878c8); color: #fff; padding: 22px 18px; text-align: center; }
+header h1 { margin: 0 0 4px; font-size: clamp(21px, 4vw, 30px); }
+header p { margin: 0; opacity: .92; }
+.container { width: min(1100px, 95%); margin: 24px auto; }
+.card { background: #fff; padding: 22px; border-radius: 14px; box-shadow: 0 5px 22px rgba(20,45,80,.08); margin-bottom: 20px; }
+h2 { color: var(--primary); margin: 0 0 12px; font-size: 20px; }
+h3 { margin: 0 0 6px; color: var(--primary); font-size: 16px; }
+label { display: block; font-weight: 700; margin-bottom: 5px; font-size: 14px; }
+input, select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; background: #fff; color: var(--text); }
+:focus-visible { outline: 3px solid rgba(40,120,200,.4); outline-offset: 2px; }
+button { border: none; border-radius: 8px; padding: 10px 18px; font-size: 15px; font-weight: 700; cursor: pointer; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+.primary-btn { background: var(--primary); color: #fff; }
+.secondary-btn { background: #e8eef6; color: var(--primary); }
+.accent-btn { background: var(--accent); color: #222; }
+.link-btn { background: none; color: var(--secondary); padding: 0; text-decoration: underline; }
+.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; align-items: end; }
+.hidden { display: none !important; }
+.msg { margin-top: 12px; font-weight: 700; min-height: 22px; }
+.msg.error { color: var(--danger); } .msg.ok { color: var(--success); }
+.note { color: var(--muted); font-size: 13px; margin: 6px 0; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-bottom: 20px; }
+.stat { background: #edf5ff; border-radius: 12px; padding: 16px; }
+.stat .label { color: var(--muted); font-size: 13px; font-weight: 700; }
+.stat .value { font-size: 21px; font-weight: 700; color: var(--primary); margin-top: 2px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.bar-row { margin: 12px 0; }
+.bar-label { display: flex; justify-content: space-between; gap: 10px; font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+.track { height: 15px; border-radius: 20px; background: #e9edf3; overflow: hidden; }
+.fill { height: 100%; border-radius: 20px; width: 0; transition: width .4s; }
+.visual { background: var(--c-visual); } .auditory { background: var(--c-auditory); }
+.reading { background: var(--c-reading); } .kinesthetic { background: var(--c-kinesthetic); } .multimodal { background: var(--c-multimodal); }
+.insight { background: #fff6df; border-left: 4px solid var(--accent); padding: 12px 14px; border-radius: 8px; margin-top: 16px; }
+.insight ul { margin: 6px 0 0; padding-inline-start: 20px; }
+.insight li { margin-bottom: 4px; }
+.plan-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 14px; }
+.plan { border: 1px solid var(--border); border-top: 5px solid var(--c-multimodal); border-radius: 12px; padding: 14px; background: #f7f9fc; }
+.plan.visual { border-top-color: var(--c-visual); } .plan.auditory { border-top-color: var(--c-auditory); }
+.plan.reading { border-top-color: var(--c-reading); } .plan.kinesthetic { border-top-color: var(--c-kinesthetic); }
+.plan .mins { font-size: 24px; font-weight: 700; color: var(--primary); }
+.plan ul { padding-inline-start: 18px; margin: 8px 0 0; font-size: 14px; }
+.plan li { margin-bottom: 5px; }
+.groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+.group { border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.chip { background: #e8eef6; color: var(--primary); border-radius: 20px; padding: 2px 10px; font-size: 13px; font-weight: 700; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 700px; }
+th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+th { background: #edf5ff; color: var(--primary); }
+.num { text-align: center; }
+.tag { display: inline-block; border-radius: 20px; padding: 1px 10px; font-weight: 700; font-size: 12px; color: #fff; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+.toolbar input { max-width: 240px; }
+.detail-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.detail { border: 2px solid var(--secondary); }
+textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font: 14px "Courier New", monospace; }
+@media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } }
+@media print {
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { background: #fff; }
+  header { background: #fff; color: #000; padding: 8px; }
+  .no-print { display: none !important; }
+  .card { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Teacher Dashboard: Learning Styles</h1>
+  <p>The Trust School – ATH Campus | Individual profiles, class profile and lesson planning</p>
+</header>
+
+<main class="container">
+
+  <section class="card no-print" id="gate">
+    <h2>Add student results</h2>
+    <p class="note" id="storeNote"></p>
+    <label for="pasteBox">Paste student result codes (one per line)</label>
+    <textarea id="pasteBox" rows="4" placeholder="ATH.1234.6.A.9.3.2.2.261101.K7"></textarea>
+    <div class="toolbar">
+      <button type="button" class="primary-btn" id="importBtn">Import pasted codes</button>
+      <button type="button" class="secondary-btn" id="fileBtn">Import files…</button>
+      <input type="file" id="fileInput" accept=".txt,.csv,.json,text/plain,application/json" multiple hidden>
+      <button type="button" class="secondary-btn" id="backupBtn">Backup all data</button>
+      <button type="button" class="secondary-btn" id="clearBtn">Clear all data</button>
+    </div>
+    <div id="gateMsg" class="msg" role="status" aria-live="polite"></div>
+    <p class="note">There is no server. Results are kept in this browser only. Students on this same device are added automatically. For other devices, collect each student's result code (or downloaded file) and import it here. Use Backup regularly, because clearing browser data deletes results.</p>
+  </section>
+
+  <div id="dash" class="hidden">
+
+    <section class="card no-print">
+      <h2>Choose a group</h2>
+      <div class="row">
+        <div><label for="fClass">Class</label><select id="fClass"></select></div>
+        <div><label for="fSection">Section</label><select id="fSection"></select></div>
+        <div><label for="fMinutes">Lesson length (minutes)</label><input id="fMinutes" type="number" min="10" max="120" value="40"></div>
+      </div>
+    </section>
+
+    <p class="note" id="groupNote"></p>
+    <div id="empty" class="card hidden">No results found for this group yet.</div>
+
+    <div id="content" class="hidden">
+
+      <div class="stats" id="stats"></div>
+
+      <section class="card">
+        <h2>Class learning profile</h2>
+        <div class="grid2">
+          <div>
+            <h3>Average score per style</h3>
+            <p class="note">Each student answers 16 questions, so scores are out of 16.</p>
+            <div id="avgBars"></div>
+          </div>
+          <div>
+            <h3>Students by dominant style</h3>
