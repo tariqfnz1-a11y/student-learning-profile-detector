@@ -84,6 +84,7 @@ button .en { text-align: center; }
 .status.error { color: var(--danger); }
 .status small { display: block; font-weight: 400; direction: ltr; text-align: left; }
 footer { text-align: center; color: var(--muted); padding: 22px 12px; font-size: 14px; }
+.code-box code { display: block; direction: ltr; text-align: left; font: 700 17px "Courier New", monospace; background: #fff; border: 2px dashed var(--secondary); border-radius: 8px; padding: 10px; margin: 10px 0; word-break: break-all; user-select: all; }
 @media (max-width: 650px) {
   .form-grid { grid-template-columns: 1fr; }
   .card { padding: 19px; }
@@ -134,6 +135,7 @@ footer { text-align: center; color: var(--muted); padding: 22px 12px; font-size:
         <li><span class="en">Choose the option that is most like you, usually and not just sometimes.</span><span class="ur">وہ آپشن چنیں جو آپ سے سب سے زیادہ ملتا ہو، عموماً اور کبھی کبھار نہیں۔</span></li>
         <li><span class="en">There are no right or wrong answers.</span><span class="ur">کوئی جواب صحیح یا غلط نہیں ہے۔</span></li>
         <li><span class="en">It takes about 5 to 7 minutes.</span><span class="ur">اس میں تقریباً 5 سے 7 منٹ لگتے ہیں۔</span></li>
+        <li><span class="en">At the end you will get a result code. Give it to your teacher to help plan lessons.</span><span class="ur">آخر میں آپ کو ایک نتیجہ کوڈ ملے گا۔ سبق کی منصوبہ بندی کے لیے یہ اپنے استاد کو دیں۔</span></li>
       </ul>
     </div>
 
@@ -213,12 +215,23 @@ footer { text-align: center; color: var(--muted); padding: 22px 12px; font-size:
       <span class="ur">یہ نتائج آج کے آپ کے جوابات کو ظاہر کرتے ہیں۔ یہ آپ کی صلاحیت کی حد مقرر نہیں کرتے۔ مختلف طریقے آزمائیں اور جو مفید ہو اسے اپنائیں۔</span>
     </div>
 
+    <div class="notice code-box">
+      <strong class="en">Your result code</strong>
+      <strong class="ur">آپ کا نتیجہ کوڈ</strong>
+      <code id="resultCode"></code>
+      <span class="en">Give this code to your teacher. It is used to plan lessons for the class.</span>
+      <span class="ur">یہ کوڈ اپنے استاد کو دیں۔ اسے کلاس کے سبق کی منصوبہ بندی کے لیے استعمال کیا جاتا ہے۔</span>
+      <div class="button-row no-print">
+        <button type="button" class="primary-btn" id="copyBtn"><span class="en">Copy code</span><span class="ur">کوڈ کاپی کریں</span></button>
+        <button type="button" class="secondary-btn" id="downloadBtn"><span class="en">Download file</span><span class="ur">فائل ڈاؤن لوڈ کریں</span></button>
+      </div>
+      <div id="saveStatus" class="status no-print" role="status" aria-live="polite"></div>
+    </div>
+
     <div class="button-row no-print">
       <button type="button" class="accent-btn" id="printBtn"><span class="en">Print / Save as PDF</span><span class="ur">پرنٹ / پی ڈی ایف محفوظ کریں</span></button>
-      <button type="button" class="primary-btn" id="saveBtn"></button>
       <button type="button" class="secondary-btn" id="restartBtn"><span class="en">Start Again</span><span class="ur">دوبارہ شروع کریں</span></button>
     </div>
-    <div id="saveStatus" class="status no-print" role="status" aria-live="polite"></div>
   </section>
 
 </main>
@@ -228,8 +241,8 @@ footer { text-align: center; color: var(--muted); padding: 22px 12px; font-size:
 <script>
 "use strict";
 
-/* Paste your deployed Google Apps Script Web App /exec URL here */
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxB1tmi194Lt5cIbF8KB1IiS4MvCVsp1QoNhBU-O5M_lOO033JWTrx4PAdVa7EQAxWH/exec";
+/* Results are kept in this browser and as a result code. There is no server. */
+const STORE_KEY = "ath_learning_results_v1";
 
 /* Each question: [English, Urdu, Visual, Auditory, Reading/Writing, Kinesthetic]
    and every option is [English, Urdu]. */
@@ -387,15 +400,13 @@ let currentQuestion = 0;
 let answers = [];
 let optionOrder = [];
 let student = {};
-let submissionId = null;
-let submitted = false;
+let lastCode = "";
 
 function setLang(lang) {
   document.body.className = "lang-" + lang;
   $("langBoth").setAttribute("aria-pressed", String(lang === "both"));
   $("langEn").setAttribute("aria-pressed", String(lang === "en"));
   $("langUr").setAttribute("aria-pressed", String(lang === "ur"));
-  if (!$("saveBtn").innerHTML) updateSaveButton();
 }
 
 function shuffle(arr) {
@@ -406,11 +417,6 @@ function shuffle(arr) {
   return arr;
 }
 
-function newId() {
-  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
-  return "id-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
-}
-
 function showSection(id) {
   ["intro", "studentForm", "quiz", "results"].forEach(s => $(s).classList.add("hidden"));
   $(id).classList.remove("hidden");
@@ -418,7 +424,7 @@ function showSection(id) {
   $(id).scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" });
 }
 
-/* ---------- Scoring (same rule is used on the server) ----------
+/* ---------- Scoring ----------
    Styles within 1 point of the top score count as leading styles.
    More than one leading style = Multimodal.
    Single style: 8+ Strong, 6-7 Moderate, otherwise Mild. */
@@ -454,9 +460,6 @@ function startQuiz() {
   currentQuestion = 0;
   answers = new Array(questions.length).fill(null);
   optionOrder = questions.map(q => shuffle(q.options.map((_, i) => i)));
-  submissionId = newId();
-  submitted = false;
-
   renderQuestion();
   showSection("quiz");
 }
@@ -600,133 +603,92 @@ function showResults() {
   });
 
   $("progressBar").style.width = "100%";
-  $("saveStatus").innerHTML = "";
-  $("saveStatus").className = "status no-print";
-  updateSaveButton();
+  publishCode(scores);
   showSection("results");
 }
 
-function updateSaveButton() {
-  $("saveBtn").disabled = submitted;
-  if (submitted) setBi("saveBtn", "Results Submitted ✓", "نتائج بھیج دیے گئے ✓");
-  else setBi("saveBtn", "Submit Results to School", "نتائج اسکول کو بھیجیں");
+/* ---------- Result code and local save ----------
+   Format: ATH.<code>.<class>.<section>.V.A.R.K.<YYMMDD>.<check>
+   The check characters catch typing mistakes. */
+function checksum(text) {
+  let h = 7;
+  for (const ch of text) h = (h * 31 + ch.charCodeAt(0)) % 1296;
+  return h.toString(36).toUpperCase().padStart(2, "0");
 }
 
-/* ---------- Submit to Google Sheets ----------
-   The page sends only identity and the 16 answers. The server
-   recalculates all scores. With no-cors the browser cannot read the
-   reply, so confirm saved rows in the Google Sheet. */
-function submitViaForm(payload) {
-  return new Promise((resolve, reject) => {
-    try {
-      const frameName = "submitFrame" + Date.now();
-      const iframe = document.createElement("iframe");
-      iframe.name = frameName;
-      iframe.style.display = "none";
+const safe = v => String(v).replace(/[^A-Za-z0-9_-]/g, "-").slice(0, 30) || "x";
 
-      const form = document.createElement("form");
-      form.method = "POST";
-      form.action = GOOGLE_SCRIPT_URL;
-      form.target = frameName;
-      form.style.display = "none";
-
-      const field = document.createElement("input");
-      field.type = "hidden";
-      field.name = "payload";
-      field.value = JSON.stringify(payload);
-      form.appendChild(field);
-
-      let finished = false;
-      const done = () => {
-        if (finished) return;
-        finished = true;
-        setTimeout(() => { iframe.remove(); form.remove(); }, 500);
-        resolve();
-      };
-      iframe.addEventListener("load", done);
-      setTimeout(done, 10000);
-
-      document.body.append(iframe, form);
-      form.submit();
-    } catch (err) {
-      reject(err);
-    }
-  });
+function buildCode(scores) {
+  const date = new Date().toISOString().slice(2, 10).replace(/-/g, "");
+  const body = ["ATH", safe(student.studentCode), safe(student.className), safe(student.section),
+    scores.V, scores.A, scores.R, scores.K, date].join(".");
+  return body + "." + checksum(body);
 }
 
-async function saveToDrive() {
-  const status = $("saveStatus");
-  if (submitted) return;
-
-  if (!GOOGLE_SCRIPT_URL.startsWith("https://script.google.com/")) {
-    status.className = "status error no-print";
-    status.innerHTML = bi("The submission link is not set correctly. Please tell your teacher.",
-      "جمع کرانے کا لنک درست نہیں ہے۔ براہ کرم اپنے استاد کو بتائیں۔");
-    return;
-  }
-
-  const data = {
-    submissionId,
-    studentCode: student.studentCode,
-    className: student.className,
-    section: student.section,
-    answers: answers.slice(),
-    submittedAt: new Date().toISOString()
-  };
-
-  $("saveBtn").disabled = true;
-  status.className = "status no-print";
-  status.innerHTML = bi("Sending…", "بھیجا جا رہا ہے…");
-
-  let sent = false;
-  let details = "";
-  let timer;
-  const timeout = new Promise((_, reject) => {
-    timer = setTimeout(() => reject(new Error("Request timed out")), 20000);
-  });
-
+function saveLocal(scores) {
   try {
-    await Promise.race([
-      fetch(GOOGLE_SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(data)
-      }),
-      timeout
-    ]);
-    sent = true;
-  } catch (error) {
-    details = `${error.name}: ${error.message}`;
-    console.warn("fetch was blocked, trying form fallback:", error);
-  } finally {
-    clearTimeout(timer);
+    const list = JSON.parse(localStorage.getItem(STORE_KEY) || "[]");
+    list.push({
+      code: safe(student.studentCode), cls: safe(student.className), sec: safe(student.section),
+      V: scores.V, A: scores.A, R: scores.R, K: scores.K, t: new Date().toISOString()
+    });
+    localStorage.setItem(STORE_KEY, JSON.stringify(list));
+    return true;
+  } catch (err) {
+    return false;
   }
+}
 
-  if (!sent) {
-    try {
-      await submitViaForm(data);
-      sent = true;
-    } catch (error) {
-      details += ` | form: ${error.message}`;
-      console.error("form submission failed:", error);
-    }
-  }
+function publishCode(scores) {
+  lastCode = buildCode(scores);
+  $("resultCode").textContent = lastCode;
+  const status = $("saveStatus");
+  status.className = "status no-print";
+  status.innerHTML = saveLocal(scores)
+    ? bi("Your result was also saved on this device.", "آپ کا نتیجہ اس ڈیوائس پر بھی محفوظ ہو گیا ہے۔")
+    : "";
+}
 
-  if (sent) {
-    submitted = true;
-    updateSaveButton();
-    status.className = "status success no-print";
-    status.innerHTML = bi("Your results were sent to school. Thank you!", "آپ کے نتائج اسکول کو بھیج دیے گئے۔ شکریہ!");
-  } else {
-    $("saveBtn").disabled = false;
-    status.className = "status error no-print";
-    status.innerHTML = bi("Could not send. Please try again or tell your teacher.",
-      "نہیں بھیجا جا سکا۔ دوبارہ کوشش کریں یا استاد کو بتائیں۔");
-    const small = document.createElement("small");
-    small.textContent = details;
-    status.appendChild(small);
+async function copyCode() {
+  const status = $("saveStatus");
+  let ok = false;
+  try {
+    await navigator.clipboard.writeText(lastCode);
+    ok = true;
+  } catch (err) {
+    const ta = document.createElement("textarea");
+    ta.value = lastCode;
+    document.body.appendChild(ta);
+    ta.select();
+    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+    ta.remove();
   }
+  status.className = ok ? "status success no-print" : "status error no-print";
+  status.innerHTML = ok
+    ? bi("Code copied. Give it to your teacher.", "کوڈ کاپی ہو گیا۔ اپنے استاد کو دیں۔")
+    : bi("Could not copy. Please select the code and copy it by hand.", "کاپی نہیں ہو سکا۔ براہ کرم کوڈ منتخب کر کے خود کاپی کریں۔");
+}
+
+function downloadResult() {
+  const { leaders, multi } = analyse(calculateScores());
+  const dominant = multi
+    ? "Multimodal (" + leaders.map(t => STYLES[t].en).join(" + ") + ")"
+    : STYLES[leaders[0]].en;
+  const text = [
+    "Student Learning Style Profile - The Trust School, ATH Campus",
+    `Student: ${student.studentCode} | Class ${student.className} | Section ${student.section}`,
+    `Dominant style: ${dominant}`,
+    "",
+    "RESULT CODE (give this to your teacher):",
+    lastCode,
+    ""
+  ].join("\n");
+  const url = URL.createObjectURL(new Blob([text], { type: "text/plain;charset=utf-8" }));
+  const a = Object.assign(document.createElement("a"), { href: url, download: `learning-profile-${safe(student.studentCode)}.txt` });
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 /* ---------- Restart ---------- */
@@ -735,8 +697,7 @@ function restartAssessment() {
   answers = [];
   optionOrder = [];
   student = {};
-  submissionId = null;
-  submitted = false;
+  lastCode = "";
   $("studentCode").value = "";
   $("className").value = "";
   $("section").value = "";
@@ -761,10 +722,9 @@ document.addEventListener("DOMContentLoaded", () => {
   $("previousBtn").addEventListener("click", previousQuestion);
 
   $("printBtn").addEventListener("click", () => window.print());
-  $("saveBtn").addEventListener("click", saveToDrive);
   $("restartBtn").addEventListener("click", restartAssessment);
-
-  updateSaveButton();
+  $("copyBtn").addEventListener("click", copyCode);
+  $("downloadBtn").addEventListener("click", downloadResult);
 });
 </script>
 
