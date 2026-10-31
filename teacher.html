@@ -137,3 +137,605 @@ textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-r
           </div>
           <div>
             <h3>Students by dominant style</h3>
+            <p class="note">Multimodal means two or more styles are within 1 point of each other.</p>
+            <div id="domBars"></div>
+          </div>
+        </div>
+        <div class="insight" id="insights"></div>
+      </section>
+
+      <section class="card">
+        <h2>Lesson planning guide</h2>
+        <p id="planIntro"></p>
+        <div class="plan-grid" id="planGrid"></div>
+        <p class="note">About 70% of lesson time follows the class profile and 30% is shared equally, so every learner is reached and students also build their less-preferred ways of learning.</p>
+      </section>
+
+      <section class="card">
+        <h2>Compare sections</h2>
+        <p class="note">Average score (out of 16) for each class and section. Use it to adjust the same lesson for different sections.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Class</th><th>Section</th><th class="num">Students</th>
+              <th class="num">Visual</th><th class="num">Auditory</th><th class="num">Read/Write</th><th class="num">Kinesth.</th>
+              <th>Dominant style</th>
+            </tr></thead>
+            <tbody id="compareBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Grouping students</h2>
+        <p class="note">Use for mixed or same-style groups, seating and targeted support. Preferences can change, so regroup often.</p>
+        <div class="groups" id="groups"></div>
+      </section>
+
+      <section class="card detail hidden" id="detail" aria-live="polite"></section>
+
+      <section class="card">
+        <h2>Individual students</h2>
+        <p class="note no-print">Select a student code to see that student's profile and how to support them in class.</p>
+        <div class="toolbar no-print">
+          <input id="search" type="search" placeholder="Search student code" aria-label="Search student code">
+          <button type="button" class="accent-btn" id="printBtn">Print report</button>
+          <button type="button" class="secondary-btn" id="csvBtn">Download CSV</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Code</th><th>Class</th><th>Sec.</th>
+              <th class="num">Visual</th><th class="num">Auditory</th><th class="num">Read/Write</th><th class="num">Kinesth.</th>
+              <th>Dominant style</th><th>Strength</th><th>Date</th>
+            </tr></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <p class="note">This is a self-reflection tool, not a test of ability or a diagnosis. Use it with classroom observation, and with small groups treat results as a guide only.</p>
+    </div>
+  </div>
+
+</main>
+
+<script>
+"use strict";
+
+const KEYS = ["V", "A", "R", "K"];
+const NAMES = { V: "Visual", A: "Auditory", R: "Reading/Writing", K: "Kinesthetic" };
+const CLS = { V: "visual", A: "auditory", R: "reading", K: "kinesthetic", M: "multimodal" };
+const TOTAL = 16;
+const CLASS_ORDER = ["6", "7", "8", "Pre-9", "9", "10"];
+
+const IDEAS = {
+  V: ["Science: labelled diagrams, process animations, video clips",
+      "Maths: bar models, number lines, colour-coded steps",
+      "English/Urdu: story maps, picture prompts, image flashcards",
+      "Social Studies: timelines, maps, infographics"],
+  A: ["Science: predict and explain to a partner, class discussion",
+      "Maths: talk through each step aloud, peer teaching",
+      "English/Urdu: read-alouds, oral retelling, debates",
+      "Social Studies: storytelling, interviews, discussion circles"],
+  R: ["Science: note-making, glossary, written conclusions",
+      "Maths: written worked examples, error-correction journal",
+      "English/Urdu: reading logs, summaries, written responses",
+      "Social Studies: source reading, cause and effect writing"],
+  K: ["Science: experiments, models, demonstrations",
+      "Maths: manipulatives, real-life tasks, practice stations",
+      "English/Urdu: role-play, word games, sentence-building cards",
+      "Social Studies: simulations, map making, model building"]
+};
+
+const SUPPORT = {
+  V: ["Show diagrams, charts and colour-coded notes with new content.",
+      "Let them sketch or mind-map before they write.",
+      "Seat them where they can see the board clearly."],
+  A: ["Let them explain ideas aloud or discuss with a partner.",
+      "Give clear spoken instructions and recap key points aloud.",
+      "Use read-alouds, oral questions and short discussions."],
+  R: ["Provide written notes, glossaries and clear written instructions.",
+      "Ask them to summarise ideas in their own words.",
+      "Offer extra reading and structured writing tasks."],
+  K: ["Use hands-on tasks, models and demonstrations.",
+      "Break lessons into short active tasks with movement.",
+      "Let them apply ideas through practice problems and real examples."],
+  M: ["Vary the mode within a lesson: show, tell, write and do.",
+      "Let them choose how to show what they have learned."]
+};
+
+/* ---------- Small helpers ---------- */
+const $ = id => document.getElementById(id);
+const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
+const joinNames = keys => keys.map(k => NAMES[k]).join(" + ");
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+function tag(cls, text) {
+  const s = el("span", "tag " + cls, text);
+  s.style.background = `var(--c-${cls})`;
+  return s;
+}
+
+function bar(label, value, percent, cls) {
+  const row = el("div", "bar-row");
+  const l = el("div", "bar-label");
+  l.append(el("span", "", label), el("span", "", value));
+  const fill = el("div", "fill " + cls);
+  const track = el("div", "track");
+  track.appendChild(fill);
+  row.append(l, track);
+  requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.width = percent + "%"; }));
+  return row;
+}
+
+function bulletList(items) {
+  const ul = el("ul");
+  items.forEach(t => ul.appendChild(el("li", "", t)));
+  return ul;
+}
+
+const classRank = c => { const i = CLASS_ORDER.indexOf(c); return i === -1 ? 99 : i; };
+const sortClasses = list => list.sort((a, b) => classRank(a) - classRank(b) || a.localeCompare(b));
+const compareRows = (a, b) =>
+  classRank(a.cls) - classRank(b.cls) || a.cls.localeCompare(b.cls) ||
+  a.sec.localeCompare(b.sec) || a.code.localeCompare(b.code, undefined, { numeric: true });
+
+/* ---------- Local data (no server) ---------- */
+const STORE_KEY = "ath_learning_results_v1";
+let allRows = [];
+
+function readStore() {
+  try {
+    const list = JSON.parse(localStorage.getItem(STORE_KEY) || "[]");
+    return Array.isArray(list) ? list : [];
+  } catch (err) { return []; }
+}
+
+function writeStore(list) {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(list)); return true; }
+  catch (err) { return false; }
+}
+
+function checksum(text) {
+  let h = 7;
+  for (const ch of text) h = (h * 31 + ch.charCodeAt(0)) % 1296;
+  return h.toString(36).toUpperCase().padStart(2, "0");
+}
+
+function validRecord(r) {
+  if (!r || typeof r !== "object") return false;
+  if (["code", "cls", "sec"].some(f => !String(r[f] === undefined ? "" : r[f]).trim())) return false;
+  const sc = KEYS.map(k => Number(r[k]));
+  if (sc.some(n => !Number.isInteger(n) || n < 0 || n > TOTAL) || sc.reduce((a, b) => a + b, 0) !== TOTAL) return false;
+  return !isNaN(new Date(r.t));
+}
+
+function normalise(r) {
+  return { code: String(r.code), cls: String(r.cls), sec: String(r.sec),
+           V: Number(r.V), A: Number(r.A), R: Number(r.R), K: Number(r.K), t: new Date(r.t).toISOString() };
+}
+
+/* "ATH.<code>.<class>.<section>.V.A.R.K.<YYMMDD>.<check>" */
+function parseCode(text) {
+  const parts = text.split(".");
+  if (parts.length !== 10 || parts[0] !== "ATH") return null;
+  if (checksum(parts.slice(0, 9).join(".")) !== parts[9].toUpperCase()) return null;
+  const d = parts[8];
+  if (!/^\d{6}$/.test(d)) return null;
+  const rec = {
+    code: parts[1], cls: parts[2], sec: parts[3],
+    V: Number(parts[4]), A: Number(parts[5]), R: Number(parts[6]), K: Number(parts[7]),
+    t: new Date(`20${d.slice(0, 2)}-${d.slice(2, 4)}-${d.slice(4, 6)}T12:00:00`).toISOString()
+  };
+  return validRecord(rec) ? rec : null;
+}
+
+function importText(text) {
+  const found = [];
+  let bad = 0;
+  const trimmed = text.trim();
+  if (trimmed.startsWith("[")) {
+    try {
+      JSON.parse(trimmed).forEach(r => (validRecord(r) ? found.push(normalise(r)) : bad++));
+    } catch (err) { bad++; }
+  } else {
+    (text.match(/ATH(?:\.[A-Za-z0-9_-]+){9}/g) || []).forEach(c => {
+      const r = parseCode(c);
+      if (r) found.push(r); else bad++;
+    });
+  }
+  return { found, bad };
+}
+
+function say(text, cls) {
+  const m = $("gateMsg");
+  m.className = "msg " + (cls || "");
+  m.textContent = text;
+}
+
+function commit(found, bad) {
+  if (!found.length && !bad) { say("No result codes were found in that text.", "error"); return; }
+  if (found.length && !writeStore(readStore().concat(found))) {
+    say("Could not save in this browser. Storage may be blocked.", "error");
+    return;
+  }
+  if (found.length) refreshData();
+  say(`Imported ${found.length} result${found.length === 1 ? "" : "s"}` +
+      (bad ? `; ${bad} invalid code${bad === 1 ? "" : "s"} skipped (check for typing mistakes).` : "."),
+      found.length ? "ok" : "error");
+}
+
+async function importFiles(fileList) {
+  let found = [], bad = 0;
+  for (const f of fileList) {
+    const r = importText(await f.text());
+    found = found.concat(r.found);
+    bad += r.bad;
+  }
+  commit(found, bad);
+}
+
+function downloadBackup() {
+  const url = URL.createObjectURL(new Blob([JSON.stringify(readStore())], { type: "application/json" }));
+  const a = Object.assign(document.createElement("a"), { href: url, download: "learning-styles-backup.json" });
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function refreshData() {
+  allRows = dedupe(readStore().filter(validRecord).map(normalise));
+  allRows.forEach(r => { r.an = analyse(r); });
+  $("dash").classList.toggle("hidden", allRows.length === 0);
+  $("storeNote").textContent = allRows.length
+    ? `${allRows.length} student${allRows.length === 1 ? "" : "s"} stored in this browser.`
+    : "No results stored yet. Paste codes below, or have students take the quiz on this device.";
+  if (allRows.length) { buildFilters(); render(); }
+}
+
+/* Keep only the latest attempt per student (code + class + section) */
+function dedupe(rows) {
+  const map = new Map();
+  rows.forEach(r => {
+    const k = [r.code, r.cls, r.sec].join("|").toLowerCase();
+    const prev = map.get(k);
+    if (!prev || new Date(r.t) > new Date(prev.t)) map.set(k, r);
+  });
+  return [...map.values()];
+}
+
+/* ---------- Analysis (same rule as the student page) ----------
+   Styles within 1 point of the top score are "leading". More than one = multimodal.
+   Single style: 8+ Strong, 6-7 Moderate, otherwise Mild. */
+function analyse(sc) {
+  const sorted = KEYS.map(k => [k, Number(sc[k])]).sort((a, b) => b[1] - a[1]);
+  const top = sorted[0][1];
+  const leaders = sorted.filter(x => x[1] >= top - 1).map(x => x[0]);
+  const multi = leaders.length > 1;
+  const level = multi ? "-" : (top >= 8 ? "Strong" : top >= 6 ? "Moderate" : "Mild");
+  return { leaders, multi, level };
+}
+
+function classProfile(rows) {
+  const n = rows.length;
+  const avg = { V: 0, A: 0, R: 0, K: 0 };
+  const single = { V: 0, A: 0, R: 0, K: 0 };
+  const leading = { V: 0, A: 0, R: 0, K: 0 };
+  const levels = { Strong: 0, Moderate: 0, Mild: 0 };
+  let multi = 0;
+  rows.forEach(r => {
+    KEYS.forEach(k => { avg[k] += Number(r[k]); });
+    if (r.an.multi) multi++; else { single[r.an.leaders[0]]++; levels[r.an.level]++; }
+    r.an.leaders.forEach(k => { leading[k]++; });
+  });
+  KEYS.forEach(k => { avg[k] /= n; });
+  const sorted = KEYS.map(k => [k, avg[k]]).sort((a, b) => b[1] - a[1]);
+  const leaders = sorted.filter(x => x[1] >= sorted[0][1] - 1).map(x => x[0]);
+  return { n, avg, single, leading, levels, multi, sorted, leaders };
+}
+
+const styleLabel = leaders => (leaders.length > 1 ? "Mixed: " + joinNames(leaders) : NAMES[leaders[0]]);
+
+/* Lesson time: 70% by class average, 30% shared equally */
+function timeSplit(avg, mins) {
+  const total = KEYS.reduce((s, k) => s + avg[k], 0) || 1;
+  const w = {}, m = {};
+  KEYS.forEach(k => { w[k] = 0.7 * (avg[k] / total) + 0.3 * 0.25; m[k] = Math.round(w[k] * mins); });
+  const diff = mins - KEYS.reduce((s, k) => s + m[k], 0);
+  m[KEYS.slice().sort((a, b) => w[b] - w[a])[0]] += diff;
+  return { m, w };
+}
+
+/* ---------- Filters ---------- */
+function fillSelect(sel, values, current, allLabel) {
+  sel.innerHTML = "";
+  sel.appendChild(Object.assign(el("option", "", allLabel), { value: "" }));
+  values.forEach(v => sel.appendChild(Object.assign(el("option", "", v), { value: v })));
+  sel.value = values.includes(current) ? current : "";
+}
+
+function buildFilters() {
+  fillSelect($("fClass"), sortClasses([...new Set(allRows.map(r => r.cls))]), $("fClass").value, "All classes");
+  refreshSections();
+}
+
+function refreshSections() {
+  const cls = $("fClass").value;
+  const secs = [...new Set(allRows.filter(r => !cls || r.cls === cls).map(r => r.sec))].sort();
+  fillSelect($("fSection"), secs, $("fSection").value, "All sections");
+}
+
+function currentRows() {
+  const cls = $("fClass").value, sec = $("fSection").value;
+  return allRows.filter(r => (!cls || r.cls === cls) && (!sec || r.sec === sec));
+}
+
+/* ---------- Rendering ---------- */
+function render() {
+  const rows = currentRows();
+  const cls = $("fClass").value, sec = $("fSection").value;
+  $("groupNote").textContent =
+    `Showing ${cls ? "Class " + cls : "all classes"}${sec ? ", Section " + sec : ""}: ${rows.length} student${rows.length === 1 ? "" : "s"}.`;
+
+  $("empty").classList.toggle("hidden", rows.length > 0);
+  $("content").classList.toggle("hidden", rows.length === 0);
+  closeDetail();
+  if (!rows.length) return;
+
+  const p = classProfile(rows);
+  const mins = Math.max(10, Math.min(120, parseInt($("fMinutes").value, 10) || 40));
+
+  renderStats(p);
+  renderBars(p);
+  renderInsights(p);
+  renderPlan(p, mins);
+  renderCompare();
+  renderGroups(rows);
+  renderTable(rows);
+}
+
+function stat(label, value) {
+  const d = el("div", "stat");
+  d.append(el("div", "label", label), el("div", "value", value));
+  return d;
+}
+
+function renderStats(p) {
+  const clear = p.levels.Strong + p.levels.Moderate;
+  const stats = $("stats");
+  stats.innerHTML = "";
+  stats.append(
+    stat("Students", String(p.n)),
+    stat("Class dominant style", styleLabel(p.leaders)),
+    stat("Multimodal students", `${p.multi} (${pct(p.multi, p.n)}%)`),
+    stat("Clear single-style preference", `${clear} (${pct(clear, p.n)}%)`)
+  );
+}
+
+function renderBars(p) {
+  const avgBars = $("avgBars");
+  avgBars.innerHTML = "";
+  p.sorted.forEach(([k, v]) =>
+    avgBars.appendChild(bar(NAMES[k], `${v.toFixed(1)} / ${TOTAL} (${pct(v, TOTAL)}%)`, pct(v, TOTAL), CLS[k])));
+
+  const domBars = $("domBars");
+  domBars.innerHTML = "";
+  KEYS.slice().sort((a, b) => p.single[b] - p.single[a]).forEach(k =>
+    domBars.appendChild(bar(NAMES[k], `${p.single[k]} (${pct(p.single[k], p.n)}%)`, pct(p.single[k], p.n), CLS[k])));
+  domBars.appendChild(bar("Multimodal", `${p.multi} (${pct(p.multi, p.n)}%)`, pct(p.multi, p.n), CLS.M));
+}
+
+function renderInsights(p) {
+  const top = p.sorted[0], low = p.sorted[3];
+  const items = [];
+  items.push(p.leaders.length > 1
+    ? `The class leans toward ${joinNames(p.leaders)}. Combine these approaches in most lessons.`
+    : `The class leans most toward ${NAMES[top[0]]} learning (average ${top[1].toFixed(1)} of ${TOTAL}).`);
+  items.push(`${NAMES[low[0]]} is the least chosen style (average ${low[1].toFixed(1)}). Include it in small doses so students build it, and so those who prefer it are not left out.`);
+  items.push(`${p.multi} of ${p.n} students are multimodal. Strong single-style preferences: ${p.levels.Strong}; moderate: ${p.levels.Moderate}; mild: ${p.levels.Mild}.`);
+  if (p.multi / p.n >= 0.4) items.push("Many students are multimodal, so varied lesson sequences (show, tell, write, do) will suit most of the class.");
+  if (p.n < 10) items.push(`Only ${p.n} student${p.n === 1 ? "" : "s"} in this group, so treat the class profile as a rough guide.`);
+
+  const box = $("insights");
+  box.innerHTML = "";
+  box.append(el("strong", "", "What this means"), bulletList(items));
+}
+
+function renderPlan(p, mins) {
+  const { m, w } = timeSplit(p.avg, mins);
+  $("planIntro").textContent =
+    `For a ${mins}-minute lesson, a balanced plan for this group is below. Use the largest block as the main teaching approach, and the others to explain, practise and review.`;
+  const grid = $("planGrid");
+  grid.innerHTML = "";
+  KEYS.slice().sort((a, b) => w[b] - w[a]).forEach(k => {
+    const d = el("div", "plan " + CLS[k]);
+    d.append(el("h3", "", NAMES[k] + " activities"),
+             el("div", "mins", `${m[k]} min (${Math.round(w[k] * 100)}%)`),
+             bulletList(IDEAS[k]));
+    grid.appendChild(d);
+  });
+}
+
+function renderCompare() {
+  const cls = $("fClass").value;
+  const scope = allRows.filter(r => !cls || r.cls === cls);
+  const groups = new Map();
+  scope.forEach(r => {
+    const k = r.cls + "|" + r.sec;
+    if (!groups.has(k)) groups.set(k, { cls: r.cls, sec: r.sec, rows: [] });
+    groups.get(k).rows.push(r);
+  });
+
+  const body = $("compareBody");
+  body.innerHTML = "";
+  const addRow = (c, s, rows, bold) => {
+    const p = classProfile(rows);
+    const tr = el("tr");
+    if (bold) tr.style.fontWeight = "700";
+    tr.append(el("td", "", c), el("td", "", s), el("td", "num", String(p.n)));
+    KEYS.forEach(k => {
+      const td = el("td", "num", p.avg[k].toFixed(1));
+      if (p.leaders.includes(k)) td.style.fontWeight = "700";
+      tr.appendChild(td);
+    });
+    const d = el("td");
+    d.appendChild(p.leaders.length > 1 ? tag("multimodal", styleLabel(p.leaders)) : tag(CLS[p.leaders[0]], NAMES[p.leaders[0]]));
+    tr.appendChild(d);
+    body.appendChild(tr);
+  };
+
+  [...groups.values()]
+    .sort((a, b) => classRank(a.cls) - classRank(b.cls) || a.cls.localeCompare(b.cls) || a.sec.localeCompare(b.sec))
+    .forEach(g => addRow(g.cls, g.sec, g.rows, false));
+  if (groups.size > 1) addRow("All", "All", scope, true);
+}
+
+function renderGroups(rows) {
+  const buckets = { V: [], A: [], R: [], K: [], M: [] };
+  rows.forEach(r => (r.an.multi ? buckets.M : buckets[r.an.leaders[0]]).push(r.code));
+  const box = $("groups");
+  box.innerHTML = "";
+  [...KEYS, "M"].forEach(k => {
+    const g = el("div", "group");
+    g.appendChild(el("h3", "", `${k === "M" ? "Multimodal" : NAMES[k]} (${buckets[k].length})`));
+    const chips = el("div", "chips");
+    if (!buckets[k].length) chips.appendChild(el("span", "note", "No students"));
+    buckets[k].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+      .forEach(c => chips.appendChild(el("span", "chip", c)));
+    g.appendChild(chips);
+    box.appendChild(g);
+  });
+}
+
+function renderTable(rows) {
+  const q = $("search").value.trim().toLowerCase();
+  const body = $("tbody");
+  body.innerHTML = "";
+  rows.slice().sort(compareRows).filter(r => !q || r.code.toLowerCase().includes(q)).forEach(r => {
+    const tr = el("tr");
+
+    const codeCell = el("td");
+    const btn = el("button", "link-btn", r.code);
+    btn.type = "button";
+    btn.addEventListener("click", () => showDetail(r));
+    codeCell.appendChild(btn);
+    tr.append(codeCell, el("td", "", r.cls), el("td", "", r.sec));
+
+    KEYS.forEach(k => {
+      const td = el("td", "num", String(r[k]));
+      if (r.an.leaders.includes(k)) td.style.fontWeight = "700";
+      tr.appendChild(td);
+    });
+
+    const dom = el("td");
+    dom.appendChild(r.an.multi ? tag("multimodal", "Multimodal: " + joinNames(r.an.leaders))
+                               : tag(CLS[r.an.leaders[0]], NAMES[r.an.leaders[0]]));
+    const d = new Date(r.t);
+    tr.append(dom, el("td", "", r.an.level), el("td", "", isNaN(d) ? "" : d.toLocaleDateString()));
+    body.appendChild(tr);
+  });
+}
+
+/* ---------- Individual student profile ---------- */
+function showDetail(r) {
+  const box = $("detail");
+  box.innerHTML = "";
+
+  const head = el("div", "detail-head");
+  const title = el("div");
+  title.append(el("h2", "", `Student ${r.code}`),
+               el("p", "note", `Class ${r.cls}, Section ${r.sec}`));
+  const close = el("button", "secondary-btn no-print", "Close");
+  close.type = "button";
+  close.addEventListener("click", closeDetail);
+  head.append(title, close);
+
+  const dom = el("p");
+  dom.append(r.an.multi ? tag("multimodal", "Multimodal: " + joinNames(r.an.leaders))
+                        : tag(CLS[r.an.leaders[0]], NAMES[r.an.leaders[0]] + " (" + r.an.level + " preference)"));
+
+  const bars = el("div");
+  KEYS.slice().sort((a, b) => r[b] - r[a]).forEach(k =>
+    bars.appendChild(bar(NAMES[k], `${r[k]} / ${TOTAL} (${pct(r[k], TOTAL)}%)`, pct(r[k], TOTAL), CLS[k])));
+
+  const tips = el("div", "insight");
+  tips.appendChild(el("strong", "", "How to support this student in class"));
+  const list = r.an.multi
+    ? [...SUPPORT.M, ...r.an.leaders.map(k => SUPPORT[k][0])]
+    : SUPPORT[r.an.leaders[0]];
+  tips.appendChild(bulletList(list));
+
+  box.append(head, dom, bars, tips);
+  box.classList.remove("hidden");
+  box.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function closeDetail() {
+  $("detail").classList.add("hidden");
+  $("detail").innerHTML = "";
+}
+
+/* ---------- CSV export ---------- */
+function csvCell(v) {
+  let s = String(v);
+  if (/^[=+\-@]/.test(s)) s = "'" + s;           // stop spreadsheet formulas
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+function downloadCsv() {
+  const head = ["Student Code", "Class", "Section", "Visual", "Auditory", "Reading/Writing", "Kinesthetic", "Dominant style", "Strength", "Date"];
+  const lines = [head.map(csvCell).join(",")];
+  currentRows().sort(compareRows).forEach(r => {
+    const d = new Date(r.t);
+    lines.push([
+      r.code, r.cls, r.sec, r.V, r.A, r.R, r.K,
+      r.an.multi ? "Multimodal: " + joinNames(r.an.leaders) : NAMES[r.an.leaders[0]],
+      r.an.level, isNaN(d) ? "" : d.toISOString().slice(0, 10)
+    ].map(csvCell).join(","));
+  });
+  const url = URL.createObjectURL(new Blob(["\ufeff" + lines.join("\n")], { type: "text/csv;charset=utf-8" }));
+  const a = Object.assign(document.createElement("a"), { href: url, download: "learning-styles.csv" });
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/* ---------- Events ---------- */
+document.addEventListener("DOMContentLoaded", () => {
+  $("importBtn").addEventListener("click", () => {
+    const { found, bad } = importText($("pasteBox").value);
+    commit(found, bad);
+    if (found.length) $("pasteBox").value = "";
+  });
+  $("fileBtn").addEventListener("click", () => $("fileInput").click());
+  $("fileInput").addEventListener("change", async e => { await importFiles(e.target.files); e.target.value = ""; });
+  $("backupBtn").addEventListener("click", downloadBackup);
+  $("clearBtn").addEventListener("click", () => {
+    if (confirm("Delete all stored results from this browser? Download a backup first.")) {
+      try { localStorage.removeItem(STORE_KEY); } catch (err) { /* ignore */ }
+      say("All stored results were deleted.", "ok");
+      refreshData();
+    }
+  });
+  window.addEventListener("storage", e => { if (e.key === STORE_KEY) refreshData(); });
+  $("fClass").addEventListener("change", () => { refreshSections(); render(); });
+  $("fSection").addEventListener("change", render);
+  $("fMinutes").addEventListener("change", render);
+  $("search").addEventListener("input", () => renderTable(currentRows()));
+  $("printBtn").addEventListener("click", () => window.print());
+  $("csvBtn").addEventListener("click", downloadCsv);
+  refreshData();
+});
+</script>
+
+</body>
+</html>
