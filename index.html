@@ -1,1 +1,729 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#123c65">
+<title>Student Learning Profile Detector</title>
+
+<style>
+:root {
+  --navy:#123c65;
+  --blue:#2478c5;
+  --bg:#eef3f9;
+  --text:#26364a;
+  --muted:#66768a;
+  --border:#dce5ef;
+  --green:#16866a;
+}
+
+* {box-sizing:border-box}
+
+body {
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.55;
+}
+
+header {
+  background:linear-gradient(120deg,#123c65,#2478c5);
+  color:white;
+  padding:30px 18px;
+  text-align:center;
+}
+
+header h1 {margin:0;font-size:27px}
+header p {margin:8px 0 0;color:#e0edff}
+
+.container {
+  max-width:850px;
+  margin:25px auto;
+  padding:0 14px;
+}
+
+.card {
+  background:white;
+  padding:25px;
+  margin-bottom:18px;
+  border-radius:15px;
+  box-shadow:0 5px 20px #173c6410;
+}
+
+h2 {color:var(--navy);margin-top:0}
+
+.muted {color:var(--muted)}
+
+label.field {
+  display:block;
+  font-weight:bold;
+  margin-top:15px;
+}
+
+input,select {
+  width:100%;
+  padding:13px;
+  margin-top:7px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  font-size:16px;
+  background:white;
+}
+
+button {
+  border:0;
+  border-radius:8px;
+  padding:13px 20px;
+  font-size:15px;
+  font-weight:bold;
+  cursor:pointer;
+  background:var(--blue);
+  color:white;
+}
+
+button:hover {filter:brightness(.92)}
+button:disabled {opacity:.45;cursor:not-allowed}
+
+.secondary {background:#65758a}
+.green {background:var(--green)}
+
+.actions {
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  margin-top:22px;
+}
+
+.actions button {flex:1}
+
+.progress {
+  height:9px;
+  background:#e4eaf1;
+  border-radius:20px;
+  overflow:hidden;
+  margin:12px 0 20px;
+}
+
+.progress-fill {
+  height:100%;
+  width:0;
+  background:var(--green);
+  transition:width .3s;
+}
+
+.question {
+  font-size:20px;
+  font-weight:bold;
+  margin:20px 0;
+}
+
+.option {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:15px;
+  margin:10px 0;
+  border:1px solid var(--border);
+  border-radius:9px;
+  cursor:pointer;
+}
+
+.option:hover {background:#f0f7ff}
+
+.option.selected {
+  background:#e8f3ff;
+  border:2px solid var(--blue);
+}
+
+.option input {
+  width:19px;
+  height:19px;
+  margin:0;
+}
+
+.hidden {display:none!important}
+
+.profile {
+  text-align:center;
+  padding:20px 10px;
+}
+
+.profile-icon {font-size:55px}
+
+.score-row {margin:20px 0}
+
+.score-label {
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  font-weight:bold;
+  margin-bottom:7px;
+}
+
+.track {
+  height:16px;
+  border-radius:20px;
+  background:#e8edf3;
+  overflow:hidden;
+}
+
+.bar {
+  height:100%;
+  border-radius:20px;
+  width:0;
+  transition:width .8s;
+}
+
+.V {background:#4285d4}
+.A {background:#e5a12b}
+.R {background:#8d66c7}
+.K {background:#1b9b78}
+
+.advice {
+  background:#f1f6fb;
+  padding:13px;
+  border-left:4px solid var(--blue);
+  border-radius:6px;
+  margin:10px 0;
+}
+
+.notice {
+  padding:13px;
+  background:#fff7e7;
+  border-left:4px solid #d99a22;
+  border-radius:6px;
+  margin:15px 0;
+}
+
+#status {
+  padding:13px;
+  background:#f1f6fb;
+  border-radius:8px;
+  margin:15px 0;
+  overflow-wrap:anywhere;
+}
+
+footer {
+  text-align:center;
+  color:var(--muted);
+  padding:20px;
+  font-size:13px;
+}
+
+@media(max-width:550px) {
+  .card {padding:18px}
+  header h1 {font-size:23px}
+  .question {font-size:18px}
+  .actions button {padding:12px 8px}
+}
+
+@media print {
+  body {background:white}
+  header,.no-print,#studentForm,#quiz,footer {
+    display:none!important
+  }
+  .container {margin:0;padding:0}
+  .card {box-shadow:none;border:1px solid #ddd}
+  #results {display:block!important}
+  .advice {break-inside:avoid}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>🎓 Student Learning Profile Detector</h1>
+  <p>Discover your learning preferences</p>
+</header>
+
+<main class="container">
+
+<section class="card" id="intro">
+  <h2>Welcome, Student!</h2>
+  <p class="muted">
+    Answer 16 questions to explore the ways you prefer
+    to learn. Select the answer that describes you best.
+  </p>
+  <p><strong>There are no right or wrong answers.</strong></p>
+  <p class="muted">
+    This is a learning preference activity, not an
+    examination or an intelligence test.
+  </p>
+</section>
+
+<section class="card" id="studentForm">
+  <h2>Student Information</h2>
+
+  <label class="field" for="studentCode">Student Code</label>
+  <input id="studentCode" maxlength="30"
+    placeholder="Enter your assigned student code" required>
+
+  <label class="field" for="className">Class</label>
+  <select id="className">
+    <option value="">Select Class</option>
+    <option>6</option><option>7</option>
+    <option>8</option><option>Pre-9</option>
+    <option>9</option><option>10</option>
+  </select>
+
+  <label class="field" for="section">Section</label>
+  <select id="section">
+    <option value="">Select Section</option>
+    <option>A</option><option>B</option>
+    <option>C</option><option>D</option>
+    <option>E</option><option>F</option>
+  </select>
+
+  <div class="notice">
+    Your responses will be used for educational planning.
+    Please use your assigned student code rather than
+    sharing unnecessary personal information.
+  </div>
+
+  <button id="startBtn" onclick="startQuiz()">
+    Start Assessment →
+  </button>
+</section>
+
+<section class="card hidden" id="quiz">
+
+  <div class="score-label">
+    <span id="questionNumber">Question 1 of 16</span>
+    <span id="percent">0%</span>
+  </div>
+
+  <div class="progress">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <div class="question" id="questionText"></div>
+
+  <div id="options" role="group"
+    aria-label="Answer options"></div>
+
+  <div class="actions">
+    <button class="secondary" id="backBtn"
+      onclick="previousQuestion()">← Back</button>
+
+    <button id="nextBtn"
+      onclick="nextQuestion()">Next →</button>
+  </div>
+</section>
+
+<section class="card hidden" id="results">
+
+  <div class="profile">
+    <div class="profile-icon" id="profileIcon">🏆</div>
+    <h2 id="profileTitle"></h2>
+    <p id="profileDescription" class="muted"></p>
+  </div>
+
+  <h2>Your Learning Preference Scores</h2>
+  <div id="scoreBars"></div>
+
+  <h2>Recommendations for You</h2>
+  <div id="recommendations"></div>
+
+  <div class="notice">
+    Your highest score indicates your strongest reported
+    preference in this assessment. You can still learn
+    effectively through all four approaches.
+  </div>
+
+  <div id="status" role="status" aria-live="polite">
+    Preparing your report...
+  </div>
+
+  <div class="actions no-print">
+    <button class="secondary" onclick="window.print()">
+      Print / Save PDF
+    </button>
+    <button onclick="location.reload()">
+      New Assessment
+    </button>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  Interactive EdTech Learning Lab |
+  Making complex concepts simple through exploration.
+</footer>
+
+<script>
+
+// IMPORTANT: Replace this with your deployed Apps Script URL.
+const GOOGLE_SCRIPT_URL =
+"PASTE_YOUR_GOOGLE_APPS_SCRIPT_EXEC_URL_HERE";
+
+const questions = [
+["When learning a new scientific concept, what helps you most?",[
+["Looking at diagrams and pictures","V"],
+["Listening to an explanation","A"],
+["Reading a textbook explanation","R"],
+["Performing an experiment","K"]]],
+
+["When remembering a new topic, you prefer:",[
+["Visual charts and mind maps","V"],
+["Repeating information aloud","A"],
+["Writing important notes","R"],
+["Practising an activity","K"]]],
+
+["In a classroom, you enjoy:",[
+["Educational videos","V"],
+["Class discussions","A"],
+["Reading materials","R"],
+["Practical activities","K"]]],
+
+["When solving a difficult problem, you prefer:",[
+["Drawing a diagram","V"],
+["Discussing it with someone","A"],
+["Reading instructions","R"],
+["Trying different methods","K"]]],
+
+["How do you prefer to revise before an examination?",[
+["Colourful charts","V"],
+["Explaining aloud","A"],
+["Written notes","R"],
+["Solving practice questions","K"]]],
+
+["When learning a new word, you prefer:",[
+["Seeing its picture","V"],
+["Hearing its pronunciation","A"],
+["Reading its meaning","R"],
+["Using it in an activity","K"]]],
+
+["Which classroom resource attracts you most?",[
+["Posters and diagrams","V"],
+["Audio explanations","A"],
+["Books and worksheets","R"],
+["Models and equipment","K"]]],
+
+["During group work, you prefer:",[
+["Creating a visual presentation","V"],
+["Discussing ideas","A"],
+["Preparing written material","R"],
+["Building something","K"]]],
+
+["When studying geography, you prefer:",[
+["Maps and illustrations","V"],
+["Listening to explanations","A"],
+["Reading about places","R"],
+["Making a model","K"]]],
+
+["When remembering directions, you prefer:",[
+["Looking at a map","V"],
+["Listening to directions","A"],
+["Reading written directions","R"],
+["Following the route yourself","K"]]],
+
+["Which science lesson interests you most?",[
+["An animated scientific video","V"],
+["A teacher's oral explanation","A"],
+["A detailed science article","R"],
+["A laboratory experiment","K"]]],
+
+["When learning mathematics, you prefer:",[
+["Graphs and visual examples","V"],
+["Listening to worked examples","A"],
+["Reading step-by-step solutions","R"],
+["Solving problems yourself","K"]]],
+
+["When preparing a presentation, you enjoy:",[
+["Designing slides and diagrams","V"],
+["Speaking and explaining","A"],
+["Writing the presentation","R"],
+["Demonstrating a practical task","K"]]],
+
+["When you forget something, you often:",[
+["Remember what it looked like","V"],
+["Remember what you heard","A"],
+["Remember what you read","R"],
+["Remember what you did","K"]]],
+
+["Which homework activity would you choose?",[
+["Make an illustrated poster","V"],
+["Record an oral explanation","A"],
+["Write a summary","R"],
+["Complete a practical project","K"]]],
+
+["What makes a lesson most enjoyable?",[
+["Seeing interesting visuals","V"],
+["Listening and discussing","A"],
+["Reading and writing","R"],
+["Doing and experimenting","K"]]]
+];
+
+const profiles = {
+ V:{
+  title:"Visual Learning Preference",
+  icon:"👁️",
+  description:"You reported a stronger preference for visual information.",
+  advice:[
+   "Use diagrams, charts and concept maps.",
+   "Watch educational animations and demonstrations.",
+   "Use colours to organise information.",
+   "Draw scientific processes and mathematical graphs."
+  ]
+ },
+ A:{
+  title:"Auditory Learning Preference",
+  icon:"🎧",
+  description:"You reported a stronger preference for listening and discussion.",
+  advice:[
+   "Participate in classroom discussions.",
+   "Explain concepts aloud.",
+   "Listen to educational explanations.",
+   "Discuss difficult topics with classmates."
+  ]
+ },
+ R:{
+  title:"Reading and Writing Preference",
+  icon:"📚",
+  description:"You reported a stronger preference for written information.",
+  advice:[
+   "Prepare organised notes.",
+   "Read textbooks and supplementary materials.",
+   "Write summaries after lessons.",
+   "Practise through written quizzes."
+  ]
+ },
+ K:{
+  title:"Practical Learning Preference",
+  icon:"🔬",
+  description:"You reported a stronger preference for practical experiences.",
+  advice:[
+   "Perform experiments and practical activities.",
+   "Use models and interactive simulations.",
+   "Participate in educational projects.",
+   "Practise concepts through real-life problems."
+  ]
+ }
+};
+
+const labels = {
+ V:"Visual",
+ A:"Auditory",
+ R:"Reading / Writing",
+ K:"Kinesthetic / Practical"
+};
+
+let current = 0;
+let answers = new Array(questions.length).fill(null);
+let student = {};
+
+function startQuiz() {
+ const code = document.getElementById("studentCode").value.trim();
+ const cls = document.getElementById("className").value;
+ const section = document.getElementById("section").value;
+
+ if(!code || !cls || !section) {
+   alert("Please complete all student information.");
+   return;
+ }
+
+ student = {
+   studentCode:code,
+   className:cls,
+   section:section
+ };
+
+ document.getElementById("intro").classList.add("hidden");
+ document.getElementById("studentForm").classList.add("hidden");
+ document.getElementById("quiz").classList.remove("hidden");
+
+ renderQuestion();
+}
+
+function renderQuestion() {
+ const q = questions[current];
+
+ document.getElementById("questionNumber").textContent =
+   "Question "+(current+1)+" of "+questions.length;
+
+ const percent = Math.round(
+   (current+1)/questions.length*100
+ );
+
+ document.getElementById("percent").textContent = percent+"%";
+ document.getElementById("progressFill").style.width = percent+"%";
+ document.getElementById("questionText").textContent = q[0];
+
+ document.getElementById("backBtn").disabled = current===0;
+
+ document.getElementById("nextBtn").textContent =
+   current===questions.length-1 ? "View Results →" : "Next →";
+
+ const box = document.getElementById("options");
+ box.innerHTML = "";
+
+ q[1].forEach((option,index)=>{
+   const label = document.createElement("label");
+   label.className = "option";
+
+   if(answers[current]===option[1]) {
+     label.classList.add("selected");
+   }
+
+   const radio = document.createElement("input");
+   radio.type = "radio";
+   radio.name = "answer";
+   radio.value = option[1];
+   radio.checked = answers[current]===option[1];
+
+   radio.addEventListener("change",()=>{
+     answers[current] = option[1];
+     renderQuestion();
+   });
+
+   label.appendChild(radio);
+   label.appendChild(document.createTextNode(option[0]));
+   box.appendChild(label);
+ });
+}
+
+function nextQuestion() {
+ if(!answers[current]) {
+   alert("Please select an answer.");
+   return;
+ }
+
+ if(current<questions.length-1) {
+   current++;
+   renderQuestion();
+ } else {
+   calculateResults();
+ }
+}
+
+function previousQuestion() {
+ if(current>0) {
+   current--;
+   renderQuestion();
+ }
+}
+
+function calculateResults() {
+ const scores = {V:0,A:0,R:0,K:0};
+
+ answers.forEach(answer=>scores[answer]++);
+
+ const highest = Math.max(...Object.values(scores));
+
+ const winners = Object.keys(scores).filter(
+   key=>scores[key]===highest
+ );
+
+ const preference = winners.length>1 ? "Mixed" : winners[0];
+
+ document.getElementById("quiz").classList.add("hidden");
+ document.getElementById("results").classList.remove("hidden");
+
+ document.getElementById("profileIcon").textContent =
+   preference==="Mixed" ? "🌟" : profiles[preference].icon;
+
+ document.getElementById("profileTitle").textContent =
+   preference==="Mixed"
+    ? "Mixed Learning Preferences"
+    : profiles[preference].title;
+
+ document.getElementById("profileDescription").textContent =
+   preference==="Mixed"
+    ? "You reported equally strong preferences in more than one approach."
+    : profiles[preference].description;
+
+ const bars = document.getElementById("scoreBars");
+ bars.innerHTML = "";
+
+ Object.keys(scores).forEach(key=>{
+   const percent = scores[key]/questions.length*100;
+
+   const row = document.createElement("div");
+   row.className = "score-row";
+
+   const label = document.createElement("div");
+   label.className = "score-label";
+
+   const name = document.createElement("span");
+   name.textContent = labels[key];
+
+   const number = document.createElement("span");
+   number.textContent = scores[key]+"/"+questions.length+
+      " ("+Math.round(percent)+"%)";
+
+   label.append(name,number);
+
+   const track = document.createElement("div");
+   track.className = "track";
+
+   const bar = document.createElement("div");
+   bar.className = "bar "+key;
+   bar.style.width = percent+"%";
+
+   track.appendChild(bar);
+   row.append(label,track);
+   bars.appendChild(row);
+ });
+
+ const recommendations =
+   document.getElementById("recommendations");
+
+ recommendations.innerHTML = "";
+
+ winners.forEach(key=>{
+   profiles[key].advice.forEach(item=>{
+     const div = document.createElement("div");
+     div.className = "advice";
+     div.textContent = "✓ "+item;
+     recommendations.appendChild(div);
+   });
+ });
+
+ const resultData = {
+   ...student,
+   answers:answers,
+   scores:scores,
+   preference:preference
+ };
+
+ saveToDrive(resultData);
+}
+
+function saveToDrive(data) {
+ const status = document.getElementById("status");
+
+ if(!GOOGLE_SCRIPT_URL.startsWith("https://script.google.com/")) {
+   status.textContent =
+    "Google Drive is not connected. Configure the Apps Script URL first.";
+   return;
+ }
+
+ status.textContent =
+   "Submitting result to Google Drive. Please wait...";
+
+ fetch(GOOGLE_SCRIPT_URL,{
+   method:"POST",
+   mode:"no-cors",
+   headers:{
+     "Content-Type":"text/plain;charset=utf-8"
+   },
+   body:JSON.stringify(data)
+ })
+ .then(()=>{
+   status.textContent =
+    "Submission request sent. Please ask your teacher to verify that your result has appeared in the school results spreadsheet.";
+ })
+ .catch(()=>{
+   status.textContent =
+    "Submission failed. Check your internet connection and try again.";
+ });
+}
+
+</script>
+</body>
+</html>
+
