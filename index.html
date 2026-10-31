@@ -1,1115 +1,761 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Student Learning Profile Detector - Explore your learning preferences.">
-<title>Student Learning Profile Detector | ATH Campus</title>
+<meta name="description" content="Student Learning Style Profile - English and Urdu">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📘</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
+<title>Student Learning Style Profile | ATH Campus</title>
 
 <style>
 :root {
-  --primary: #174a8b;
-  --secondary: #2878c8;
-  --accent: #f0a42b;
-  --background: #f3f6fb;
-  --text: #1d2939;
-  --muted: #667085;
-  --border: #dce3ed;
-  --white: #ffffff;
-  --success: #16865b;
-  --danger: #c0392b;
+  --primary: #174a8b; --secondary: #2878c8; --accent: #f0a42b;
+  --background: #f3f6fb; --text: #1d2939; --muted: #667085;
+  --border: #dce3ed; --success: #16865b; --danger: #c0392b;
 }
-
-* {
-  box-sizing: border-box;
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: var(--background); color: var(--text); line-height: 1.6; }
+.ur {
+  direction: rtl; text-align: right; line-height: 2.2;
+  font-family: "Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", "Noto Naskh Arabic", "Segoe UI", Tahoma, serif;
 }
-
-body {
-  margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  background: var(--background);
-  color: var(--text);
-  line-height: 1.6;
-}
-
-header {
-  background: linear-gradient(120deg, #123766, #2878c8);
-  color: white;
-  padding: 28px 18px;
-  text-align: center;
-}
-
-header h1 {
-  margin: 0 0 8px;
-  font-size: clamp(23px, 4vw, 34px);
-}
-
-header p {
-  margin: 0;
-  opacity: .92;
-}
-
-.container {
-  width: min(900px, 94%);
-  margin: 28px auto;
-}
-
-.card {
-  background: white;
-  padding: 26px;
-  border-radius: 16px;
-  box-shadow: 0 5px 22px rgba(20, 45, 80, .08);
-  margin-bottom: 22px;
-}
-
-h2 {
-  color: var(--primary);
-  margin-top: 0;
-}
-
-.intro-note {
-  background: #edf5ff;
-  border-left: 4px solid var(--secondary);
-  padding: 13px 16px;
-  border-radius: 7px;
-  margin: 18px 0;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
-}
-
-label {
-  display: block;
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-
-input, select {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 16px;
-  background: white;
-}
-
-input:focus, select:focus, button:focus-visible {
-  outline: 3px solid rgba(40, 120, 200, .3);
-  outline-offset: 2px;
-}
-
-button {
-  border: none;
-  border-radius: 8px;
-  padding: 12px 20px;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: .2s;
-}
-
-button:hover {
-  transform: translateY(-1px);
-  filter: brightness(.96);
-}
-
-button:disabled {
-  opacity: .5;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.primary-btn {
-  background: var(--primary);
-  color: white;
-}
-
-.secondary-btn {
-  background: #e8eef6;
-  color: var(--primary);
-}
-
-.accent-btn {
-  background: var(--accent);
-  color: #222;
-}
-
-.button-row {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 22px;
-}
-
-.hidden {
-  display: none !important;
-}
-
-.progress-wrap {
-  background: #e8edf4;
-  height: 10px;
-  border-radius: 20px;
-  overflow: hidden;
-  margin: 12px 0 20px;
-}
-
-.progress-bar {
-  height: 100%;
-  width: 0;
-  background: var(--secondary);
-  transition: width .3s;
-}
-
-.question-count {
-  color: var(--muted);
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.question {
-  font-size: 21px;
-  font-weight: 700;
-  margin: 18px 0;
-}
-
-.options {
-  display: grid;
-  gap: 12px;
-}
-
-.option {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px;
-  cursor: pointer;
-  background: white;
-  transition: .2s;
-}
-
-.option:hover {
-  border-color: var(--secondary);
-  background: #f4f8ff;
-}
-
-.option.selected {
-  border: 2px solid var(--secondary);
-  background: #edf5ff;
-}
-
-.option input {
-  width: auto;
-  margin-top: 5px;
-  accent-color: var(--primary);
-  flex-shrink: 0;
-}
-
-.feedback {
-  margin-top: 14px;
-  color: var(--danger);
-  font-weight: 700;
-  min-height: 24px;
-}
-
-.result-heading {
-  text-align: center;
-  padding: 15px;
-  background: #edf5ff;
-  border-radius: 12px;
-  margin-bottom: 20px;
-}
-
-.result-heading h2 {
-  margin-bottom: 5px;
-}
-
-.score-row {
-  margin: 18px 0;
-}
-
-.score-label {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-
-.score-track {
-  height: 17px;
-  border-radius: 20px;
-  background: #e9edf3;
-  overflow: hidden;
-}
-
-.score-fill {
-  height: 100%;
-  width: 0;
-  border-radius: 20px;
-  transition: width .5s;
-}
-
-.visual { background: #3987d5; }
-.auditory { background: #8e62bd; }
-.reading { background: #159b82; }
-.kinesthetic { background: #e49a2d; }
-
-.recommendation {
-  background: #f7f9fc;
-  border: 1px solid var(--border);
-  padding: 16px;
-  border-radius: 10px;
-  margin: 12px 0;
-}
-
-.recommendation h3 {
-  margin-top: 0;
-  color: var(--primary);
-}
-
-.notice {
-  padding: 13px;
-  border-radius: 8px;
-  background: #fff6df;
-  border-left: 4px solid var(--accent);
-  margin: 18px 0;
-}
-
-.status {
-  margin-top: 14px;
-  font-weight: 700;
-}
-
+.en, .ur { display: block; }
+body.lang-en .ur { display: none; }
+body.lang-ur .en { display: none; }
+body.lang-both .ur { font-size: .95em; color: #344054; }
+header { background: linear-gradient(120deg, #123766, #2878c8); color: #fff; padding: 24px 18px; text-align: center; }
+header h1 { margin: 0 0 6px; font-size: clamp(22px, 4vw, 32px); }
+header .ur { text-align: center; color: #fff !important; }
+header p { margin: 0; opacity: .92; }
+.lang-switch { display: flex; justify-content: center; gap: 8px; margin-top: 14px; }
+.lang-switch button { background: rgba(255,255,255,.18); color: #fff; padding: 8px 16px; font-size: 15px; }
+.lang-switch button[aria-pressed="true"] { background: #fff; color: var(--primary); }
+.container { width: min(900px, 94%); margin: 28px auto; }
+.card { background: #fff; padding: 26px; border-radius: 16px; box-shadow: 0 5px 22px rgba(20,45,80,.08); margin-bottom: 22px; }
+h2 { color: var(--primary); margin-top: 0; }
+.intro-note { background: #edf5ff; border-left: 4px solid var(--secondary); padding: 13px 16px; border-radius: 7px; margin: 18px 0; }
+.intro-note ul { padding-inline-start: 20px; margin: 8px 0 0; }
+.form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+label { display: block; font-weight: 700; margin-bottom: 6px; }
+input[type="text"], select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 16px; background: #fff; color: var(--text); }
+input:focus-visible, select:focus-visible, button:focus-visible, .option:focus-within { outline: 3px solid rgba(40,120,200,.4); outline-offset: 2px; }
+button { border: none; border-radius: 8px; padding: 12px 20px; font-size: 16px; font-weight: 700; cursor: pointer; transition: transform .2s, filter .2s; }
+button:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(.96); }
+button:disabled { opacity: .5; cursor: not-allowed; }
+button .ur { text-align: center; line-height: 1.9; }
+button .en { text-align: center; }
+.primary-btn { background: var(--primary); color: #fff; }
+.secondary-btn { background: #e8eef6; color: var(--primary); }
+.accent-btn { background: var(--accent); color: #222; }
+.primary-btn .ur { color: #fff !important; }
+.button-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 22px; }
+.hidden { display: none !important; }
+.progress-wrap { background: #e8edf4; height: 10px; border-radius: 20px; overflow: hidden; margin: 12px 0 20px; }
+.progress-bar { height: 100%; width: 0; background: var(--secondary); transition: width .3s; }
+.question-count { color: var(--muted); font-weight: 700; margin-bottom: 8px; }
+.question { font-size: 20px; font-weight: 700; margin: 18px 0; outline: none; }
+.options { display: grid; gap: 12px; }
+.option { display: flex; align-items: flex-start; gap: 12px; border: 2px solid var(--border); border-radius: 10px; padding: 14px; margin: 0; font-weight: 400; cursor: pointer; background: #fff; transition: border-color .2s, background .2s; }
+.option:hover { border-color: var(--secondary); background: #f4f8ff; }
+.option.selected { border-color: var(--secondary); background: #edf5ff; }
+.option input { width: auto; margin-top: 8px; accent-color: var(--primary); flex-shrink: 0; }
+.opt-text { flex: 1; }
+.feedback { margin-top: 14px; color: var(--danger); font-weight: 700; min-height: 24px; }
+.result-heading { text-align: center; padding: 15px; background: #edf5ff; border-radius: 12px; margin-bottom: 20px; }
+.result-heading .ur { text-align: center; }
+.result-heading h2, .result-heading h3 { margin: 6px 0; color: var(--primary); }
+.badge { display: inline-block; background: var(--primary); color: #fff; border-radius: 20px; padding: 2px 14px; font-weight: 700; margin-top: 6px; }
+.badge .ur { color: #fff !important; text-align: center; }
+.score-row { margin: 18px 0; }
+.score-label { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-weight: 700; margin-bottom: 6px; }
+.score-track { height: 17px; border-radius: 20px; background: #e9edf3; overflow: hidden; }
+.score-fill { height: 100%; width: 0; border-radius: 20px; transition: width .5s; }
+.visual { background: #3987d5; } .auditory { background: #8e62bd; } .reading { background: #159b82; } .kinesthetic { background: #e49a2d; }
+.recommendation { background: #f7f9fc; border: 1px solid var(--border); padding: 16px; border-radius: 10px; margin: 12px 0; }
+.recommendation h3 { margin: 0 0 6px; color: var(--primary); }
+.recommendation ul { padding-inline-start: 22px; margin: 8px 0 0; }
+.recommendation li { margin-bottom: 8px; }
+.notice { padding: 13px; border-radius: 8px; background: #fff6df; border-left: 4px solid var(--accent); margin: 18px 0; }
+.status { margin-top: 14px; font-weight: 700; }
 .status.success { color: var(--success); }
 .status.error { color: var(--danger); }
-
-footer {
-  text-align: center;
-  color: var(--muted);
-  padding: 22px 12px;
-  font-size: 14px;
-}
-
+.status small { display: block; font-weight: 400; direction: ltr; text-align: left; }
+footer { text-align: center; color: var(--muted); padding: 22px 12px; font-size: 14px; }
 @media (max-width: 650px) {
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .card {
-    padding: 19px;
-  }
-
-  .button-row button {
-    flex: 1 1 100%;
-  }
-
-  .question {
-    font-size: 18px;
-  }
+  .form-grid { grid-template-columns: 1fr; }
+  .card { padding: 19px; }
+  .button-row button { flex: 1 1 100%; }
+  .question { font-size: 18px; }
 }
-
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 @media print {
-  body {
-    background: white;
-  }
-
-  header {
-    background: white;
-    color: black;
-    padding: 10px;
-  }
-
-  .no-print, #intro, #studentForm, #quiz, footer {
-    display: none !important;
-  }
-
-  #results {
-    display: block !important;
-    box-shadow: none;
-  }
-
-  .card {
-    box-shadow: none;
-    border: 1px solid #ddd;
-  }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { background: #fff; }
+  header { background: #fff; color: #000; padding: 10px; }
+  header .ur { color: #000 !important; }
+  .no-print, #intro, #studentForm, #quiz, footer { display: none !important; }
+  #results { display: block !important; }
+  .card { box-shadow: none; border: 1px solid #ddd; }
 }
 </style>
 </head>
 
-<body>
+<body class="lang-both">
 
 <header>
-  <h1>Student Learning Profile Detector</h1>
-  <p>The Trust School – ATH Campus | Classes 6–10</p>
-  <p>Discover your learning preferences and improve your study strategies.</p>
+  <h1>
+    <span class="en">Student Learning Style Profile</span>
+    <span class="ur">طالب علم کے سیکھنے کے انداز کا جائزہ</span>
+  </h1>
+  <p class="en">The Trust School – ATH Campus | Classes 6–10</p>
+  <p class="ur">دی ٹرسٹ اسکول – اے ٹی ایچ کیمپس | جماعت 6 تا 10</p>
+  <div class="lang-switch no-print" role="group" aria-label="Language / زبان">
+    <button type="button" id="langBoth" aria-pressed="true">English + اردو</button>
+    <button type="button" id="langEn" aria-pressed="false">English</button>
+    <button type="button" id="langUr" aria-pressed="false">اردو</button>
+  </div>
 </header>
 
 <main class="container">
 
-  <!-- INTRODUCTION -->
   <section id="intro" class="card">
-    <h2>Welcome, Student!</h2>
-
-    <p>
-      This assessment helps you explore the ways you prefer to engage
-      with information, understand concepts and practise new skills.
-    </p>
+    <h2><span class="en">Welcome, Student!</span><span class="ur">خوش آمدید، طالب علم!</span></h2>
+    <p class="en">This activity helps you discover how you like to learn: by seeing, hearing, reading and writing, or doing.</p>
+    <p class="ur">یہ سرگرمی آپ کو یہ جاننے میں مدد دیتی ہے کہ آپ کیسے سیکھنا پسند کرتے ہیں: دیکھ کر، سن کر، پڑھ لکھ کر یا کر کے۔</p>
 
     <div class="intro-note">
-      <strong>How to participate:</strong>
+      <strong class="en">How to take the quiz:</strong>
+      <strong class="ur">کوئز کیسے حل کریں:</strong>
       <ul>
-        <li>Answer all 16 questions honestly.</li>
-        <li>Select the option that best describes your preference.</li>
-        <li>There are no right or wrong answers.</li>
-        <li>Your results will suggest useful study strategies.</li>
+        <li><span class="en">Answer all 16 questions.</span><span class="ur">تمام 16 سوالات کے جواب دیں۔</span></li>
+        <li><span class="en">Choose the option that is most like you, usually and not just sometimes.</span><span class="ur">وہ آپشن چنیں جو آپ سے سب سے زیادہ ملتا ہو، عموماً اور کبھی کبھار نہیں۔</span></li>
+        <li><span class="en">There are no right or wrong answers.</span><span class="ur">کوئی جواب صحیح یا غلط نہیں ہے۔</span></li>
+        <li><span class="en">It takes about 5 to 7 minutes.</span><span class="ur">اس میں تقریباً 5 سے 7 منٹ لگتے ہیں۔</span></li>
       </ul>
     </div>
 
     <div class="notice">
-      This is a self-reflection activity, not an intelligence test or
-      a scientific diagnosis. Learning preferences are not fixed types.
-      Students can benefit from combining different learning approaches.
+      <span class="en">This is a self-reflection activity, not an intelligence test or a scientific diagnosis. Learning preferences are not fixed. The best learners use many methods.</span>
+      <span class="ur">یہ خود شناسی کی سرگرمی ہے، ذہانت کا امتحان یا سائنسی تشخیص نہیں۔ سیکھنے کی ترجیحات مستقل نہیں ہوتیں۔ بہترین طلبہ کئی طریقے استعمال کرتے ہیں۔</span>
     </div>
 
-    <button type="button" class="primary-btn" id="continueBtn">
-      Continue to Student Details →
-    </button>
+    <button type="button" class="primary-btn" id="continueBtn"><span class="en">Continue</span><span class="ur">جاری رکھیں</span></button>
   </section>
 
-  <!-- STUDENT DETAILS -->
   <section id="studentForm" class="card hidden">
-    <h2>Student Information</h2>
-    <p>Please enter your details before starting the assessment.</p>
+    <h2><span class="en">Student Information</span><span class="ur">طالب علم کی معلومات</span></h2>
+    <p class="en">Please enter your details before starting.</p>
+    <p class="ur">شروع کرنے سے پہلے اپنی معلومات درج کریں۔</p>
 
     <div class="form-grid">
       <div>
-        <label for="studentCode">Student Code *</label>
-        <input id="studentCode" type="text"
-               placeholder="Enter student code"
-               maxlength="30" autocomplete="off">
+        <label for="studentCode"><span class="en">Student Code *</span><span class="ur">طالب علم کوڈ *</span></label>
+        <input id="studentCode" type="text" maxlength="30" autocomplete="off" placeholder="e.g. 1234">
       </div>
-
       <div>
-        <label for="className">Class *</label>
+        <label for="className"><span class="en">Class *</span><span class="ur">جماعت *</span></label>
         <select id="className">
-          <option value="">Select Class</option>
-          <option>6</option>
-          <option>7</option>
-          <option>Pre-9</option>
-          <option>9</option>
-          <option>10</option>
+          <option value="">Select / منتخب کریں</option>
+          <option>6</option><option>7</option><option>Pre-9</option><option>9</option><option>10</option>
         </select>
       </div>
-
       <div>
-        <label for="section">Section *</label>
+        <label for="section"><span class="en">Section *</span><span class="ur">سیکشن *</span></label>
         <select id="section">
-          <option value="">Select Section</option>
-          <option>A</option>
-          <option>B</option>
-          <option>C</option>
-          <option>D</option>
-          <option>E</option>
-          <option>F</option>
+          <option value="">Select / منتخب کریں</option>
+          <option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option>
         </select>
       </div>
     </div>
 
-    <div id="formFeedback" class="feedback" aria-live="polite"></div>
+    <div id="formFeedback" class="feedback" role="alert"></div>
 
     <div class="button-row">
-      <button type="button" class="secondary-btn" id="backIntroBtn">
-        ← Back
-      </button>
-      <button type="button" class="primary-btn" id="startBtn">
-        Start Assessment →
-      </button>
+      <button type="button" class="secondary-btn" id="backIntroBtn"><span class="en">Back</span><span class="ur">واپس</span></button>
+      <button type="button" class="primary-btn" id="startBtn"><span class="en">Start</span><span class="ur">شروع کریں</span></button>
     </div>
   </section>
 
-  <!-- ASSESSMENT -->
   <section id="quiz" class="card hidden">
-    <div class="question-count" id="questionCount">
-      Question 1 of 16
-    </div>
-
-    <div class="progress-wrap"
-         role="progressbar"
-         aria-label="Assessment progress"
-         aria-valuemin="0"
-         aria-valuemax="16"
-         aria-valuenow="0"
-         id="progressContainer">
+    <div class="question-count" id="questionCount"></div>
+    <div class="progress-wrap" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="16" aria-valuenow="0" id="progressContainer">
       <div class="progress-bar" id="progressBar"></div>
     </div>
-
-    <div id="questionText" class="question"></div>
-    <div id="options" class="options"></div>
-
-    <div id="quizFeedback" class="feedback" aria-live="polite"></div>
-
+    <div id="questionText" class="question" tabindex="-1"></div>
+    <div id="options" class="options" role="radiogroup" aria-labelledby="questionText"></div>
+    <div id="quizFeedback" class="feedback" role="alert"></div>
     <div class="button-row">
-      <button type="button" class="secondary-btn" id="previousBtn">
-        ← Previous
-      </button>
-      <button type="button" class="primary-btn" id="nextBtn">
-        Next →
-      </button>
+      <button type="button" class="secondary-btn" id="previousBtn"><span class="en">Previous</span><span class="ur">پچھلا</span></button>
+      <button type="button" class="primary-btn" id="nextBtn"></button>
     </div>
   </section>
 
-  <!-- RESULTS -->
   <section id="results" class="card hidden">
     <div class="result-heading">
-      <h2>Your Learning Preference Profile</h2>
+      <h2><span class="en">Your Learning Style Profile</span><span class="ur">آپ کے سیکھنے کے انداز کا نتیجہ</span></h2>
       <p id="studentSummary"></p>
       <h3 id="profileTitle"></h3>
-      <p id="profileDescription"></p>
+      <div id="profileLevel"></div>
+      <div id="profileDescription"></div>
     </div>
 
-    <h2>Assessment Scores</h2>
-    <p>Scores show how often you selected each type of learning activity.</p>
-
+    <h2><span class="en">Your Scores</span><span class="ur">آپ کے اسکور</span></h2>
     <div id="scoreBars"></div>
 
-    <h2>Study Recommendations</h2>
+    <h2><span class="en">Study Tips</span><span class="ur">مطالعے کے مشورے</span></h2>
     <div id="recommendations"></div>
 
     <div class="notice">
-      Remember: these results describe your answers today. They do not
-      limit what you can learn. Try different strategies and use the
-      methods that help you understand and remember each subject.
+      <span class="en">These results show your answers today. They do not limit what you can learn. Try different methods and keep what works for you.</span>
+      <span class="ur">یہ نتائج آج کے آپ کے جوابات کو ظاہر کرتے ہیں۔ یہ آپ کی صلاحیت کی حد مقرر نہیں کرتے۔ مختلف طریقے آزمائیں اور جو مفید ہو اسے اپنائیں۔</span>
     </div>
 
     <div class="button-row no-print">
-      <button type="button" class="accent-btn" id="printBtn">
-        Print / Save as PDF
-      </button>
-      <button type="button" class="primary-btn" id="saveBtn">
-        Submit Results to School
-      </button>
-      <button type="button" class="secondary-btn" id="restartBtn">
-        Start Again
-      </button>
+      <button type="button" class="accent-btn" id="printBtn"><span class="en">Print / Save as PDF</span><span class="ur">پرنٹ / پی ڈی ایف محفوظ کریں</span></button>
+      <button type="button" class="primary-btn" id="saveBtn"></button>
+      <button type="button" class="secondary-btn" id="restartBtn"><span class="en">Start Again</span><span class="ur">دوبارہ شروع کریں</span></button>
     </div>
-
-    <div id="saveStatus" class="status" role="status" aria-live="polite"></div>
+    <div id="saveStatus" class="status no-print" role="status" aria-live="polite"></div>
   </section>
 
 </main>
 
-<footer>
-  Student Learning Profile Detector | The Trust School – ATH Campus
-</footer>
+<footer>Student Learning Style Profile | The Trust School – ATH Campus</footer>
 
 <script>
 "use strict";
 
-/* -------------------------------------------------
-   GOOGLE APPS SCRIPT WEB APP URL
+/* Paste your deployed Google Apps Script Web App /exec URL here */
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxB1tmi194Lt5cIbF8KB1IiS4MvCVsp1QoNhBU-O5M_lOO033JWTrx4PAdVa7EQAxWH/exec";
 
-   Paste your deployed Google Apps Script /exec URL
-   between the quotation marks below.
--------------------------------------------------- */
-
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyLM7BNSKIMWQVOzMnRP_F9Spn3XRfqkVPpfZiLqphbPGuOiybxth-NUbu-L3jH-35F/exec";
-
-/* -------------------------------------------------
-   ASSESSMENT QUESTIONS
-
-   V = Visual
-   A = Auditory
-   R = Reading/Writing
-   K = Kinesthetic/Practical
--------------------------------------------------- */
-
+/* Each question: [English, Urdu, Visual, Auditory, Reading/Writing, Kinesthetic]
+   and every option is [English, Urdu]. */
 const questions = [
-  {
-    question: "When learning a new science concept, what helps you most?",
-    options: [
-      { text: "Looking at diagrams, pictures or charts.", type: "V" },
-      { text: "Listening to the teacher explain it.", type: "A" },
-      { text: "Reading the textbook explanation.", type: "R" },
-      { text: "Performing an experiment or activity.", type: "K" }
-    ]
-  },
-  {
-    question: "When remembering a difficult topic, what do you prefer?",
-    options: [
-      { text: "Remembering its pictures, colours or diagrams.", type: "V" },
-      { text: "Remembering what the teacher said.", type: "A" },
-      { text: "Reading my written notes again.", type: "R" },
-      { text: "Remembering the activity I performed.", type: "K" }
-    ]
-  },
-  {
-    question: "How would you prefer to learn about the solar system?",
-    options: [
-      { text: "Through a labelled diagram or animation.", type: "V" },
-      { text: "Through a lecture or recorded explanation.", type: "A" },
-      { text: "Through a written article or textbook.", type: "R" },
-      { text: "Through a model of the solar system.", type: "K" }
-    ]
-  },
-  {
-    question: "When preparing for an examination, what do you usually do?",
-    options: [
-      { text: "Use mind maps, charts and colourful notes.", type: "V" },
-      { text: "Discuss topics or explain them aloud.", type: "A" },
-      { text: "Read and rewrite important notes.", type: "R" },
-      { text: "Solve practice questions and activities.", type: "K" }
-    ]
-  },
-  {
-    question: "When someone explains how to reach a place, you prefer:",
-    options: [
-      { text: "A map or visual directions.", type: "V" },
-      { text: "Spoken directions.", type: "A" },
-      { text: "Written directions or an address.", type: "R" },
-      { text: "Following the route yourself.", type: "K" }
-    ]
-  },
-  {
-    question: "When learning English vocabulary, you prefer:",
-    options: [
-      { text: "Flashcards with pictures.", type: "V" },
-      { text: "Hearing words pronounced aloud.", type: "A" },
-      { text: "Writing and reading word lists.", type: "R" },
-      { text: "Using new words in conversations and activities.", type: "K" }
-    ]
-  },
-  {
-    question: "Which classroom resource attracts your attention most?",
-    options: [
-      { text: "Posters, charts and presentations.", type: "V" },
-      { text: "Class discussions and explanations.", type: "A" },
-      { text: "Books, worksheets and written material.", type: "R" },
-      { text: "Models, experiments and practical equipment.", type: "K" }
-    ]
-  },
-  {
-    question: "When solving a mathematics problem, you prefer:",
-    options: [
-      { text: "A visual diagram or worked example.", type: "V" },
-      { text: "Someone explaining each step aloud.", type: "A" },
-      { text: "Reading the written solution step by step.", type: "R" },
-      { text: "Using objects or practical examples.", type: "K" }
-    ]
-  },
-  {
-    question: "When learning a computer skill, you prefer:",
-    options: [
-      { text: "Watching screenshots or a visual demonstration.", type: "V" },
-      { text: "Listening to instructions.", type: "A" },
-      { text: "Following written instructions.", type: "R" },
-      { text: "Using the computer and practising yourself.", type: "K" }
-    ]
-  },
-  {
-    question: "What helps you understand a historical event?",
-    options: [
-      { text: "Timelines, maps and photographs.", type: "V" },
-      { text: "A teacher telling the story.", type: "A" },
-      { text: "Reading historical accounts.", type: "R" },
-      { text: "Role-play or creating a historical model.", type: "K" }
-    ]
-  },
-  {
-    question: "When you are confused about a lesson, what do you do first?",
-    options: [
-      { text: "Look for a diagram or visual example.", type: "V" },
-      { text: "Ask someone to explain it aloud.", type: "A" },
-      { text: "Read another explanation.", type: "R" },
-      { text: "Try an example or practical activity.", type: "K" }
-    ]
-  },
-  {
-    question: "Which activity would you enjoy most in a geography lesson?",
-    options: [
-      { text: "Studying maps, pictures and diagrams.", type: "V" },
-      { text: "Listening to a presentation and discussion.", type: "A" },
-      { text: "Reading about places and environments.", type: "R" },
-      { text: "Making a model or conducting a field activity.", type: "K" }
-    ]
-  },
-  {
-    question: "When working in a group, you prefer to:",
-    options: [
-      { text: "Create posters, charts or visual presentations.", type: "V" },
-      { text: "Discuss ideas with group members.", type: "A" },
-      { text: "Prepare written information or summaries.", type: "R" },
-      { text: "Build, demonstrate or perform something.", type: "K" }
-    ]
-  },
-  {
-    question: "When learning a new sport or physical activity, you prefer:",
-    options: [
-      { text: "Watching a demonstration.", type: "V" },
-      { text: "Listening to instructions.", type: "A" },
-      { text: "Reading the rules and steps.", type: "R" },
-      { text: "Practising the activity yourself.", type: "K" }
-    ]
-  },
-  {
-    question: "Which revision resource would you choose?",
-    options: [
-      { text: "Infographics and illustrated summaries.", type: "V" },
-      { text: "Audio explanations and discussions.", type: "A" },
-      { text: "Written summaries and revision notes.", type: "R" },
-      { text: "Practice tasks, models and experiments.", type: "K" }
-    ]
-  },
-  {
-    question: "When presenting a topic to your class, what would you enjoy most?",
-    options: [
-      { text: "Using slides, pictures and diagrams.", type: "V" },
-      { text: "Explaining and discussing the topic.", type: "A" },
-      { text: "Preparing a written report or handout.", type: "R" },
-      { text: "Demonstrating a model or practical activity.", type: "K" }
-    ]
-  }
-];
+  ["When you learn a new topic in class, you understand best when…",
+   "جب آپ کلاس میں کوئی نیا موضوع سیکھتے ہیں تو آپ سب سے بہتر تب سمجھتے ہیں جب…",
+   ["I see a diagram, chart or picture.", "مجھے خاکہ، چارٹ یا تصویر نظر آئے۔"],
+   ["The teacher explains it aloud.", "استاد زبانی سمجھائیں۔"],
+   ["I read it in the book or notes.", "میں کتاب یا نوٹس میں پڑھوں۔"],
+   ["I try it myself or do an activity.", "میں خود کر کے دیکھوں یا کوئی سرگرمی کروں۔"]],
+  ["Days later, you remember a lesson mostly by…",
+   "کئی دن بعد آپ کوئی سبق زیادہ تر کس طرح یاد کرتے ہیں؟",
+   ["Picturing the page, colours or diagram.", "صفحہ، رنگ یا خاکہ ذہن میں لا کر۔"],
+   ["Recalling the teacher's voice or the discussion.", "استاد کی آواز یا گفتگو یاد کر کے۔"],
+   ["Recalling the words I wrote or read.", "وہ الفاظ یاد کر کے جو میں نے لکھے یا پڑھے۔"],
+   ["Recalling what I did in the activity.", "وہ کام یاد کر کے جو میں نے خود کیا۔"]],
+  ["To prepare for an exam, you usually…",
+   "امتحان کی تیاری کے لیے آپ عموماً…",
+   ["Make mind maps, charts and colour-coded notes.", "ذہنی نقشے، چارٹ اور رنگین نوٹس بناتے ہیں۔"],
+   ["Say it aloud or discuss it with a friend.", "بلند آواز سے دہراتے ہیں یا دوست سے بات کرتے ہیں۔"],
+   ["Read and rewrite notes and summaries.", "نوٹس اور خلاصے پڑھتے اور دوبارہ لکھتے ہیں۔"],
+   ["Solve past papers and practise examples.", "پرانے پرچے اور مثالیں حل کرتے ہیں۔"]],
+  ["To use a new app or gadget, you first…",
+   "کوئی نئی ایپ یا آلہ استعمال کرنے کے لیے آپ سب سے پہلے…",
+   ["Look at pictures or watch a video.", "تصاویر دیکھتے ہیں یا ویڈیو دیکھتے ہیں۔"],
+   ["Ask someone to tell me the steps.", "کسی سے مراحل سنتے ہیں۔"],
+   ["Read the written instructions.", "تحریری ہدایات پڑھتے ہیں۔"],
+   ["Start using it and learn by trying.", "استعمال شروع کر دیتے ہیں اور تجربے سے سیکھتے ہیں۔"]],
+  ["When you are stuck on a maths problem, you…",
+   "ریاضی کے سوال میں اٹک جائیں تو آپ…",
+   ["Draw a picture or diagram of the problem.", "سوال کی تصویر یا خاکہ بناتے ہیں۔"],
+   ["Ask a teacher or friend to talk me through it.", "استاد یا دوست سے زبانی سمجھتے ہیں۔"],
+   ["Read a worked example carefully.", "حل شدہ مثال غور سے پڑھتے ہیں۔"],
+   ["Use objects or try similar problems.", "چیزوں سے یا ملتے جلتے سوال حل کر کے سمجھتے ہیں۔"]],
+  ["To learn new vocabulary, you prefer…",
+   "نئے الفاظ سیکھنے کے لیے آپ کو کیا پسند ہے؟",
+   ["Pictures and flashcards.", "تصاویر اور فلیش کارڈز۔"],
+   ["Hearing the word and repeating it.", "لفظ سن کر دہرانا۔"],
+   ["Writing and reading word lists.", "الفاظ کی فہرست لکھنا اور پڑھنا۔"],
+   ["Using new words in sentences or role-play.", "نئے الفاظ جملوں یا مکالموں میں استعمال کرنا۔"]],
+  ["Which kind of lesson do you enjoy most?",
+   "آپ کو کس طرح کا سبق سب سے زیادہ پسند ہے؟",
+   ["Lessons with slides, videos and pictures.", "سلائیڈز، ویڈیوز اور تصاویر والا سبق۔"],
+   ["Lessons with discussion, stories and questions.", "بحث، کہانیوں اور سوال جواب والا سبق۔"],
+   ["Lessons with reading and written answers.", "پڑھنے اور تحریری جوابات والا سبق۔"],
+   ["Lessons with experiments, models and activities.", "تجربات، ماڈل اور سرگرمیوں والا سبق۔"]],
+  ["To find a new place, you prefer…",
+   "کسی نئی جگہ پہنچنے کے لیے آپ کیا پسند کرتے ہیں؟",
+   ["A map or a sketch.", "نقشہ یا خاکہ۔"],
+   ["Someone telling me the way.", "کوئی زبانی راستہ بتا دے۔"],
+   ["Written directions or an address.", "تحریری ہدایات یا پتہ۔"],
+   ["Going there once and learning the route.", "ایک بار خود جا کر راستہ سیکھنا۔"]],
+  ["To understand how the heart pumps blood, you would…",
+   "دل خون کیسے پمپ کرتا ہے، یہ سمجھنے کے لیے آپ…",
+   ["Study a labelled diagram or animation.", "نام لگا خاکہ یا اینیمیشن دیکھیں گے۔"],
+   ["Listen to an explanation.", "وضاحت سنیں گے۔"],
+   ["Read the textbook and note key points.", "درسی کتاب پڑھ کر اہم نکات لکھیں گے۔"],
+   ["Build a model or do a demonstration.", "ماڈل بنائیں گے یا عملی مظاہرہ کریں گے۔"]],
+  ["When you feel confused during a lesson, you first…",
+   "سبق کے دوران الجھن ہو تو آپ سب سے پہلے…",
+   ["Look for a diagram or example.", "کوئی خاکہ یا مثال تلاش کرتے ہیں۔"],
+   ["Ask a question aloud.", "بلند آواز سے سوال پوچھتے ہیں۔"],
+   ["Re-read the explanation.", "وضاحت دوبارہ پڑھتے ہیں۔"],
+   ["Try an example myself.", "خود کوئی مثال حل کر کے دیکھتے ہیں۔"]],
+  ["In a group project, you prefer to…",
+   "گروپ پراجیکٹ میں آپ کیا کرنا پسند کریں گے؟",
+   ["Design the poster or slides.", "پوسٹر یا سلائیڈز ڈیزائن کرنا۔"],
+   ["Lead the discussion or present.", "بحث کی قیادت یا پیشکش کرنا۔"],
+   ["Write the report or summary.", "رپورٹ یا خلاصہ لکھنا۔"],
+   ["Build the model or do the practical part.", "ماڈل بنانا یا عملی حصہ کرنا۔"]],
+  ["When studying alone, what helps you concentrate?",
+   "اکیلے پڑھتے وقت آپ کو توجہ کس چیز سے ملتی ہے؟",
+   ["A tidy, well-organised page with colours and diagrams.", "رنگوں اور خاکوں کے ساتھ صاف، ترتیب شدہ صفحہ۔"],
+   ["Reading aloud or listening to a recording.", "بلند آواز سے پڑھنا یا ریکارڈنگ سننا۔"],
+   ["Quiet time with books and a pen.", "خاموشی میں کتابیں اور قلم۔"],
+   ["Moving around, using my hands, short breaks.", "چلنا پھرنا، ہاتھ استعمال کرنا اور مختصر وقفے۔"]],
+  ["To understand a historical event, you prefer…",
+   "کسی تاریخی واقعے کو سمجھنے کے لیے آپ کیا پسند کرتے ہیں؟",
+   ["Timelines, maps and photographs.", "ٹائم لائن، نقشے اور تصاویر۔"],
+   ["A teacher telling the story.", "استاد کا کہانی کی طرح سنانا۔"],
+   ["Reading historical accounts.", "تاریخی بیانات پڑھنا۔"],
+   ["Role-play or building a model.", "کردار ادا کرنا یا ماڈل بنانا۔"]],
+  ["To learn a new skill (sport, cooking, typing), you…",
+   "کوئی نئی مہارت (کھیل، کھانا پکانا، ٹائپنگ) سیکھنے کے لیے آپ…",
+   ["Watch someone demonstrate it.", "کسی کو کر کے دکھاتے ہوئے دیکھتے ہیں۔"],
+   ["Listen to the instructions.", "ہدایات سنتے ہیں۔"],
+   ["Read the steps or a manual.", "مراحل یا رہنما کتابچہ پڑھتے ہیں۔"],
+   ["Practise again and again.", "بار بار مشق کرتے ہیں۔"]],
+  ["To explain something to a friend, you would…",
+   "دوست کو کوئی بات سمجھانے کے لیے آپ…",
+   ["Draw a sketch or diagram.", "خاکہ یا تصویر بنا کر دکھائیں گے۔"],
+   ["Talk it through aloud.", "زبانی سمجھائیں گے۔"],
+   ["Write it down step by step.", "مرحلہ وار لکھ کر سمجھائیں گے۔"],
+   ["Show it by doing it.", "کر کے دکھائیں گے۔"]],
+  ["When a teacher gives feedback on your work, you prefer…",
+   "جب استاد آپ کے کام پر رائے دیں تو آپ کو کیا پسند ہے؟",
+   ["Marks, highlights and colours on my work.", "کام پر نشانات، ہائی لائٹ اور رنگ۔"],
+   ["A short talk with the teacher.", "استاد سے مختصر بات چیت۔"],
+   ["Written comments I can re-read.", "تحریری تبصرہ جو میں دوبارہ پڑھ سکوں۔"],
+   ["Being shown how to fix it with an example.", "مثال کر کے دکھایا جائے کہ اسے کیسے درست کرنا ہے۔"]]
+].map(q => ({
+  en: q[0],
+  ur: q[1],
+  options: [
+    { type: "V", en: q[2][0], ur: q[2][1] },
+    { type: "A", en: q[3][0], ur: q[3][1] },
+    { type: "R", en: q[4][0], ur: q[4][1] },
+    { type: "K", en: q[5][0], ur: q[5][1] }
+  ]
+}));
 
-/* -------------------------------------------------
-   STATE
--------------------------------------------------- */
+const STYLES = {
+  V: { en: "Visual", ur: "بصری (دیکھ کر سیکھنا)", cls: "visual",
+    dEn: "You learn best by seeing: diagrams, colours, charts and videos.",
+    dUr: "آپ دیکھ کر بہتر سیکھتے ہیں: خاکے، رنگ، چارٹ اور ویڈیوز۔",
+    tips: [
+      ["Turn your notes into mind maps, charts and colour-coded summaries.", "اپنے نوٹس کو ذہنی نقشوں، چارٹس اور رنگین خلاصوں میں بدلیں۔"],
+      ["Watch videos or animations and draw a diagram for each topic.", "ویڈیوز یا اینیمیشنز دیکھیں اور ہر موضوع کا خاکہ بنائیں۔"],
+      ["Use highlighters, sticky notes and picture flashcards.", "ہائی لائٹر، چپکنے والے نوٹس اور تصویری فلیش کارڈز استعمال کریں۔"]] },
+  A: { en: "Auditory", ur: "سمعی (سن کر سیکھنا)", cls: "auditory",
+    dEn: "You learn best by listening and talking: explanations, discussion and saying things aloud.",
+    dUr: "آپ سن کر اور بول کر بہتر سیکھتے ہیں: وضاحت، بحث اور بلند آواز سے دہرانا۔",
+    tips: [
+      ["Explain each lesson aloud in your own words, or teach a friend.", "ہر سبق اپنے الفاظ میں بلند آواز سے سمجھائیں یا کسی دوست کو پڑھائیں۔"],
+      ["Join study discussions and ask questions in class.", "مطالعاتی گفتگو میں حصہ لیں اور کلاس میں سوال پوچھیں۔"],
+      ["Record short summaries and listen to them again.", "مختصر خلاصے ریکارڈ کریں اور دوبارہ سنیں۔"]] },
+  R: { en: "Reading/Writing", ur: "پڑھنا اور لکھنا", cls: "reading",
+    dEn: "You learn best through words: reading and writing.",
+    dUr: "آپ الفاظ کے ذریعے بہتر سیکھتے ہیں: پڑھ کر اور لکھ کر۔",
+    tips: [
+      ["Write summaries and rewrite key notes in your own words.", "خلاصے لکھیں اور اہم نوٹس اپنے الفاظ میں دوبارہ لکھیں۔"],
+      ["Make lists, definitions and question-and-answer notes.", "فہرستیں، تعریفیں اور سوال و جواب کے نوٹس بنائیں۔"],
+      ["Read extra books or articles on each topic.", "ہر موضوع پر اضافی کتابیں یا مضامین پڑھیں۔"]] },
+  K: { en: "Kinesthetic", ur: "عملی (کر کے سیکھنا)", cls: "kinesthetic",
+    dEn: "You learn best by doing: practice, experiments and real examples.",
+    dUr: "آپ کر کے بہتر سیکھتے ہیں: مشق، تجربات اور حقیقی مثالیں۔",
+    tips: [
+      ["Solve many practice questions and past papers.", "زیادہ سے زیادہ مشقی سوالات اور پرانے پرچے حل کریں۔"],
+      ["Use models, experiments and real-life examples.", "ماڈلز، تجربات اور روزمرہ کی مثالیں استعمال کریں۔"],
+      ["Study in short sessions with movement breaks.", "مختصر وقت کے لیے پڑھیں اور درمیان میں حرکت والے وقفے لیں۔"]] }
+};
+
+const LEVELS = {
+  strong:   ["Strong preference", "مضبوط ترجیح"],
+  moderate: ["Moderate preference", "درمیانی ترجیح"],
+  mild:     ["Mild preference", "ہلکی ترجیح"]
+};
+
+/* ---------- Helpers ---------- */
+const $ = id => document.getElementById(id);
+const bi = (en, ur) => `<span class="en">${en}</span><span class="ur">${ur}</span>`;
+const setBi = (id, en, ur) => { $(id).innerHTML = bi(en, ur); };
 
 let currentQuestion = 0;
-let answers = new Array(questions.length).fill(null);
+let answers = [];
+let optionOrder = [];
 let student = {};
+let submissionId = null;
+let submitted = false;
 
-/* -------------------------------------------------
-   SHORTCUTS
--------------------------------------------------- */
-
-const $ = id => document.getElementById(id);
-
-function showSection(sectionId) {
-  ["intro", "studentForm", "quiz", "results"].forEach(id => {
-    $(id).classList.add("hidden");
-  });
-
-  $(sectionId).classList.remove("hidden");
-  $(sectionId).scrollIntoView({ behavior: "smooth", block: "start" });
+function setLang(lang) {
+  document.body.className = "lang-" + lang;
+  $("langBoth").setAttribute("aria-pressed", String(lang === "both"));
+  $("langEn").setAttribute("aria-pressed", String(lang === "en"));
+  $("langUr").setAttribute("aria-pressed", String(lang === "ur"));
+  if (!$("saveBtn").innerHTML) updateSaveButton();
 }
 
-/* -------------------------------------------------
-   STUDENT DETAILS AND START BUTTON
--------------------------------------------------- */
-
-function continueToStudentForm() {
-  showSection("studentForm");
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
 }
 
+function newId() {
+  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return "id-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
+}
+
+function showSection(id) {
+  ["intro", "studentForm", "quiz", "results"].forEach(s => $(s).classList.add("hidden"));
+  $(id).classList.remove("hidden");
+  const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  $(id).scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" });
+}
+
+/* ---------- Scoring (same rule is used on the server) ----------
+   Styles within 1 point of the top score count as leading styles.
+   More than one leading style = Multimodal.
+   Single style: 8+ Strong, 6-7 Moderate, otherwise Mild. */
+function calculateScores() {
+  const scores = { V: 0, A: 0, R: 0, K: 0 };
+  answers.forEach(a => { if (a in scores) scores[a]++; });
+  return scores;
+}
+
+function analyse(scores) {
+  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  const top = sorted[0][1];
+  const leaders = sorted.filter(([, s]) => s >= top - 1).map(([t]) => t);
+  const multi = leaders.length > 1;
+  const level = multi ? null : (top >= 8 ? "strong" : top >= 6 ? "moderate" : "mild");
+  return { sorted, leaders, multi, level, top };
+}
+
+/* ---------- Student form ---------- */
 function startQuiz() {
-  const code = $("studentCode").value.trim();
+  const code = $("studentCode").value.trim().replace(/\s+/g, " ");
   const className = $("className").value;
   const section = $("section").value;
 
-  $("formFeedback").textContent = "";
-
   if (!code || !className || !section) {
-    $("formFeedback").textContent =
-      "Please complete Student Code, Class and Section.";
+    setBi("formFeedback", "Please complete Student Code, Class and Section.",
+      "براہ کرم طالب علم کوڈ، جماعت اور سیکشن مکمل کریں۔");
     return;
   }
+  $("formFeedback").innerHTML = "";
 
-  student = {
-    studentCode: code,
-    className: className,
-    section: section
-  };
-
+  student = { studentCode: code, className, section };
   currentQuestion = 0;
   answers = new Array(questions.length).fill(null);
+  optionOrder = questions.map(q => shuffle(q.options.map((_, i) => i)));
+  submissionId = newId();
+  submitted = false;
 
   renderQuestion();
   showSection("quiz");
 }
 
-/* -------------------------------------------------
-   DISPLAY QUESTION
--------------------------------------------------- */
+/* ---------- Questions ---------- */
+function selectAnswer(type) {
+  answers[currentQuestion] = type;
+  document.querySelectorAll("#options .option").forEach(l => {
+    l.classList.toggle("selected", l.dataset.type === type);
+  });
+  $("quizFeedback").innerHTML = "";
+}
 
 function renderQuestion() {
   const q = questions[currentQuestion];
+  const n = currentQuestion + 1, total = questions.length;
 
-  $("questionCount").textContent =
-    `Question ${currentQuestion + 1} of ${questions.length}`;
+  setBi("questionCount", `Question ${n} of ${total}`, `سوال ${n} از ${total}`);
+  $("progressBar").style.width = (currentQuestion / total) * 100 + "%";
+  $("progressContainer").setAttribute("aria-valuenow", String(currentQuestion));
+  setBi("questionText", q.en, q.ur);
 
-  const progress = ((currentQuestion) / questions.length) * 100;
-  $("progressBar").style.width = progress + "%";
+  const container = $("options");
+  container.innerHTML = "";
 
-  $("progressContainer").setAttribute(
-    "aria-valuenow",
-    String(currentQuestion)
-  );
-
-  $("questionText").textContent = q.question;
-
-  const optionsContainer = $("options");
-  optionsContainer.innerHTML = "";
-
-  q.options.forEach((option, index) => {
+  optionOrder[currentQuestion].forEach(i => {
+    const opt = q.options[i];
     const label = document.createElement("label");
     label.className = "option";
-
-    if (answers[currentQuestion] === option.type) {
-      label.classList.add("selected");
-    }
+    label.dataset.type = opt.type;
 
     const radio = document.createElement("input");
     radio.type = "radio";
     radio.name = "answer";
-    radio.value = option.type;
-    radio.checked = answers[currentQuestion] === option.type;
+    radio.value = opt.type;
+    if (answers[currentQuestion] === opt.type) {
+      radio.checked = true;
+      label.classList.add("selected");
+    }
+    radio.addEventListener("change", () => selectAnswer(opt.type));
 
-    radio.addEventListener("change", () => {
-      answers[currentQuestion] = option.type;
-      renderQuestion();
-      $("quizFeedback").textContent = "";
-    });
+    const text = document.createElement("span");
+    text.className = "opt-text";
+    text.innerHTML = bi(opt.en, opt.ur);
 
-    const span = document.createElement("span");
-    span.textContent = option.text;
-
-    label.appendChild(radio);
-    label.appendChild(span);
-
-    label.addEventListener("click", () => {
-      answers[currentQuestion] = option.type;
-      renderQuestion();
-      $("quizFeedback").textContent = "";
-    });
-
-    optionsContainer.appendChild(label);
+    label.append(radio, text);
+    container.appendChild(label);
   });
 
   $("previousBtn").disabled = currentQuestion === 0;
-
-  $("nextBtn").textContent =
-    currentQuestion === questions.length - 1
-      ? "View My Results →"
-      : "Next →";
-
-  $("quizFeedback").textContent = "";
+  if (currentQuestion === total - 1) setBi("nextBtn", "View My Results", "میرا نتیجہ دیکھیں");
+  else setBi("nextBtn", "Next", "اگلا");
+  $("quizFeedback").innerHTML = "";
+  $("questionText").focus({ preventScroll: true });
 }
-
-/* -------------------------------------------------
-   QUESTION NAVIGATION
--------------------------------------------------- */
 
 function nextQuestion() {
   if (!answers[currentQuestion]) {
-    $("quizFeedback").textContent =
-      "Please select one answer before continuing.";
+    setBi("quizFeedback", "Please choose one answer to continue.", "آگے بڑھنے کے لیے ایک جواب منتخب کریں۔");
     return;
   }
-
-  if (currentQuestion < questions.length - 1) {
-    currentQuestion++;
-    renderQuestion();
-  } else {
-    showResults();
-  }
+  if (currentQuestion < questions.length - 1) { currentQuestion++; renderQuestion(); }
+  else showResults();
 }
 
 function previousQuestion() {
-  if (currentQuestion > 0) {
-    currentQuestion--;
-    renderQuestion();
-  }
+  if (currentQuestion > 0) { currentQuestion--; renderQuestion(); }
 }
 
-/* -------------------------------------------------
-   CALCULATE SCORES
--------------------------------------------------- */
-
-function calculateScores() {
-  const scores = {
-    V: 0,
-    A: 0,
-    R: 0,
-    K: 0
-  };
-
-  answers.forEach(answer => {
-    if (answer && Object.prototype.hasOwnProperty.call(scores, answer)) {
-      scores[answer]++;
-    }
-  });
-
-  return scores;
-}
-
-/* -------------------------------------------------
-   RESULTS AND PROFILE
--------------------------------------------------- */
-
-const profileInfo = {
-  V: {
-    name: "Visual Preference",
-    description: "You frequently selected visual learning activities.",
-    advice: [
-      "Use diagrams, mind maps, charts and labelled illustrations.",
-      "Watch educational animations and visual demonstrations.",
-      "Use colours to organise important ideas in your notes."
-    ]
-  },
-
-  A: {
-    name: "Auditory Preference",
-    description: "You frequently selected listening and discussion activities.",
-    advice: [
-      "Discuss lessons with classmates and teachers.",
-      "Explain concepts aloud in your own words.",
-      "Use appropriate audio explanations and recorded revision."
-    ]
-  },
-
-  R: {
-    name: "Reading/Writing Preference",
-    description: "You frequently selected reading and writing activities.",
-    advice: [
-      "Prepare written summaries after each lesson.",
-      "Read textbooks and make organised revision notes.",
-      "Practise definitions, written answers and short explanations."
-    ]
-  },
-
-  K: {
-    name: "Kinesthetic/Practical Preference",
-    description: "You frequently selected practical and hands-on activities.",
-    advice: [
-      "Use experiments, models and practical demonstrations.",
-      "Solve problems through activities and real-life examples.",
-      "Practise skills rather than only reading about them."
-    ]
-  }
-};
-
-const categoryNames = {
-  V: "Visual",
-  A: "Auditory",
-  R: "Reading/Writing",
-  K: "Kinesthetic/Practical"
-};
-
+/* ---------- Results ---------- */
 function showResults() {
-  if (answers.some(answer => answer === null)) {
-    $("quizFeedback").textContent =
-      "Please answer every question before viewing your results.";
+  if (answers.some(a => a === null)) {
+    setBi("quizFeedback", "Please answer every question.", "براہ کرم تمام سوالات کے جواب دیں۔");
     return;
   }
 
   const scores = calculateScores();
   const total = questions.length;
-
-  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-  const highest = sorted[0][1];
-
-  const leaders = sorted.filter(item => item[1] === highest);
-  const topTypes = leaders.map(item => item[0]);
-
-  const profileTitle = topTypes.length > 1
-    ? "Mixed Learning Preferences"
-    : profileInfo[topTypes[0]].name;
-
-  let profileDescription;
-
-  if (topTypes.length > 1) {
-    profileDescription =
-      "Your answers show equal preference scores in " +
-      topTypes.map(type => categoryNames[type]).join(" and ") +
-      ". You may find a combination of these approaches useful.";
-  } else {
-    profileDescription = profileInfo[topTypes[0]].description;
-  }
+  const { sorted, leaders, multi, level } = analyse(scores);
 
   $("studentSummary").textContent =
-    `Student Code: ${student.studentCode} | Class: ${student.className} | Section: ${student.section}`;
+    `Code / کوڈ: ${student.studentCode}  |  Class / جماعت: ${student.className}  |  Section / سیکشن: ${student.section}`;
 
-  $("profileTitle").textContent = profileTitle;
-  $("profileDescription").textContent = profileDescription;
+  if (multi) {
+    const namesEn = leaders.map(t => STYLES[t].en).join(" + ");
+    const namesUr = leaders.map(t => STYLES[t].ur.split(" (")[0]).join(" + ");
+    $("profileTitle").innerHTML = bi(`Dominant style: Multimodal (${namesEn})`, `نمایاں انداز: ملا جلا (${namesUr})`);
+    $("profileLevel").innerHTML = "";
+    $("profileDescription").innerHTML = bi(
+      "Your scores are close, so you use more than one style. Combine the tips below for the best results.",
+      "آپ کے اسکور قریب قریب ہیں، اس لیے آپ ایک سے زیادہ انداز استعمال کرتے ہیں۔ بہترین نتائج کے لیے نیچے دیے گئے مشورے ملا کر استعمال کریں۔");
+  } else {
+    const s = STYLES[leaders[0]];
+    $("profileTitle").innerHTML = bi(`Dominant style: ${s.en}`, `نمایاں انداز: ${s.ur}`);
+    $("profileLevel").innerHTML = `<span class="badge">${bi(LEVELS[level][0], LEVELS[level][1])}</span>`;
+    $("profileDescription").innerHTML = bi(s.dEn, s.dUr);
+  }
 
-  const scoreBars = $("scoreBars");
-  scoreBars.innerHTML = "";
-
-  const styles = {
-    V: "visual",
-    A: "auditory",
-    R: "reading",
-    K: "kinesthetic"
-  };
-
+  const bars = $("scoreBars");
+  bars.innerHTML = "";
   sorted.forEach(([type, score]) => {
-    const percentage = Math.round((score / total) * 100);
-
+    const pct = Math.round((score / total) * 100);
     const row = document.createElement("div");
     row.className = "score-row";
 
     const label = document.createElement("div");
     label.className = "score-label";
-
     const name = document.createElement("span");
-    name.textContent = categoryNames[type];
-
+    name.innerHTML = bi(STYLES[type].en, STYLES[type].ur.split(" (")[0]);
     const value = document.createElement("span");
-    value.textContent = `${score} / ${total} (${percentage}%)`;
-
+    value.textContent = `${score} / ${total} (${pct}%)`;
     label.append(name, value);
 
     const track = document.createElement("div");
     track.className = "score-track";
-
     const fill = document.createElement("div");
-    fill.className = `score-fill ${styles[type]}`;
-    fill.style.width = percentage + "%";
-
+    fill.className = `score-fill ${STYLES[type].cls}`;
     track.appendChild(fill);
+
     row.append(label, track);
-    scoreBars.appendChild(row);
+    bars.appendChild(row);
+    requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.width = pct + "%"; }));
   });
 
-  const recommendationBox = $("recommendations");
-  recommendationBox.innerHTML = "";
-
-  topTypes.forEach(type => {
+  const box = $("recommendations");
+  box.innerHTML = "";
+  leaders.forEach(type => {
+    const s = STYLES[type];
     const item = document.createElement("div");
     item.className = "recommendation";
-
-    const heading = document.createElement("h3");
-    heading.textContent = categoryNames[type] + " strategies";
-
-    const list = document.createElement("ul");
-
-    profileInfo[type].advice.forEach(advice => {
+    const h = document.createElement("h3");
+    h.innerHTML = bi(`${s.en} strategies`, `${s.ur.split(" (")[0]} طریقے`);
+    const ul = document.createElement("ul");
+    s.tips.forEach(t => {
       const li = document.createElement("li");
-      li.textContent = advice;
-      list.appendChild(li);
+      li.innerHTML = bi(t[0], t[1]);
+      ul.appendChild(li);
     });
-
-    item.append(heading, list);
-    recommendationBox.appendChild(item);
+    item.append(h, ul);
+    box.appendChild(item);
   });
 
   $("progressBar").style.width = "100%";
+  $("saveStatus").innerHTML = "";
+  $("saveStatus").className = "status no-print";
+  updateSaveButton();
   showSection("results");
 }
 
-/* -------------------------------------------------
-   SUBMIT RESULTS TO GOOGLE SHEETS
+function updateSaveButton() {
+  $("saveBtn").disabled = submitted;
+  if (submitted) setBi("saveBtn", "Results Submitted ✓", "نتائج بھیج دیے گئے ✓");
+  else setBi("saveBtn", "Submit Results to School", "نتائج اسکول کو بھیجیں");
+}
 
-   The browser sends a request to your Apps Script
-   Web App. With no-cors, the browser cannot read
-   the server's response. Verify saved records in
-   the connected Google Sheet.
--------------------------------------------------- */
+/* ---------- Submit to Google Sheets ----------
+   The page sends only identity and the 16 answers. The server
+   recalculates all scores. With no-cors the browser cannot read the
+   reply, so confirm saved rows in the Google Sheet. */
+function submitViaForm(payload) {
+  return new Promise((resolve, reject) => {
+    try {
+      const frameName = "submitFrame" + Date.now();
+      const iframe = document.createElement("iframe");
+      iframe.name = frameName;
+      iframe.style.display = "none";
+
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = GOOGLE_SCRIPT_URL;
+      form.target = frameName;
+      form.style.display = "none";
+
+      const field = document.createElement("input");
+      field.type = "hidden";
+      field.name = "payload";
+      field.value = JSON.stringify(payload);
+      form.appendChild(field);
+
+      let finished = false;
+      const done = () => {
+        if (finished) return;
+        finished = true;
+        setTimeout(() => { iframe.remove(); form.remove(); }, 500);
+        resolve();
+      };
+      iframe.addEventListener("load", done);
+      setTimeout(done, 10000);
+
+      document.body.append(iframe, form);
+      form.submit();
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
 
 async function saveToDrive() {
   const status = $("saveStatus");
-  const saveButton = $("saveBtn");
-
-  if (!GOOGLE_SCRIPT_URL.trim()) {
-    status.className = "status error";
-    status.textContent =
-      "Google Apps Script URL is missing. Add your /exec URL in the HTML code.";
-    return;
-  }
+  if (submitted) return;
 
   if (!GOOGLE_SCRIPT_URL.startsWith("https://script.google.com/")) {
-    status.className = "status error";
-    status.textContent =
-      "Please check your Google Apps Script Web App URL.";
+    status.className = "status error no-print";
+    status.innerHTML = bi("The submission link is not set correctly. Please tell your teacher.",
+      "جمع کرانے کا لنک درست نہیں ہے۔ براہ کرم اپنے استاد کو بتائیں۔");
     return;
   }
 
-  const scores = calculateScores();
-  const total = questions.length;
-
-  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-  const highest = sorted[0][1];
-  const topTypes = sorted
-    .filter(item => item[1] === highest)
-    .map(item => item[0]);
-
-  const preference = topTypes.length > 1
-    ? "Mixed: " + topTypes.map(type => categoryNames[type]).join(" + ")
-    : categoryNames[topTypes[0]];
-
   const data = {
+    submissionId,
     studentCode: student.studentCode,
     className: student.className,
     section: student.section,
-    visual: scores.V,
-    auditory: scores.A,
-    readingWriting: scores.R,
-    kinesthetic: scores.K,
-    preference: preference,
-    totalQuestions: total,
+    answers: answers.slice(),
     submittedAt: new Date().toISOString()
   };
 
-  saveButton.disabled = true;
-  status.className = "status";
-  status.textContent = "Sending submission...";
+  $("saveBtn").disabled = true;
+  status.className = "status no-print";
+  status.innerHTML = bi("Sending…", "بھیجا جا رہا ہے…");
+
+  let sent = false;
+  let details = "";
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error("Request timed out")), 20000);
+  });
 
   try {
-    await fetch(GOOGLE_SCRIPT_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
-      body: JSON.stringify(data)
-    });
-
-    status.className = "status success";
-    status.textContent =
-      "Submission request sent. Please verify the record in the school's Google Sheet.";
+    await Promise.race([
+      fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(data)
+      }),
+      timeout
+    ]);
+    sent = true;
   } catch (error) {
-    status.className = "status error";
-    status.textContent =
-      "The request could not be sent. Check your internet connection and Apps Script deployment.";
+    details = `${error.name}: ${error.message}`;
+    console.warn("fetch was blocked, trying form fallback:", error);
   } finally {
-    saveButton.disabled = false;
+    clearTimeout(timer);
+  }
+
+  if (!sent) {
+    try {
+      await submitViaForm(data);
+      sent = true;
+    } catch (error) {
+      details += ` | form: ${error.message}`;
+      console.error("form submission failed:", error);
+    }
+  }
+
+  if (sent) {
+    submitted = true;
+    updateSaveButton();
+    status.className = "status success no-print";
+    status.innerHTML = bi("Your results were sent to school. Thank you!", "آپ کے نتائج اسکول کو بھیج دیے گئے۔ شکریہ!");
+  } else {
+    $("saveBtn").disabled = false;
+    status.className = "status error no-print";
+    status.innerHTML = bi("Could not send. Please try again or tell your teacher.",
+      "نہیں بھیجا جا سکا۔ دوبارہ کوشش کریں یا استاد کو بتائیں۔");
+    const small = document.createElement("small");
+    small.textContent = details;
+    status.appendChild(small);
   }
 }
 
-/* -------------------------------------------------
-   RESTART
--------------------------------------------------- */
-
+/* ---------- Restart ---------- */
 function restartAssessment() {
   currentQuestion = 0;
-  answers = new Array(questions.length).fill(null);
+  answers = [];
+  optionOrder = [];
   student = {};
-
+  submissionId = null;
+  submitted = false;
   $("studentCode").value = "";
   $("className").value = "";
   $("section").value = "";
-  $("saveStatus").textContent = "";
-
+  $("formFeedback").innerHTML = "";
+  $("saveStatus").innerHTML = "";
+  $("progressBar").style.width = "0";
   showSection("intro");
 }
 
-/* -------------------------------------------------
-   EVENT LISTENERS
-
-   These are attached after the HTML elements exist.
-   This avoids the common Start Assessment button bug.
--------------------------------------------------- */
-
+/* ---------- Events ---------- */
 document.addEventListener("DOMContentLoaded", () => {
-  $("continueBtn").addEventListener("click", continueToStudentForm);
+  $("langBoth").addEventListener("click", () => setLang("both"));
+  $("langEn").addEventListener("click", () => setLang("en"));
+  $("langUr").addEventListener("click", () => setLang("ur"));
+
+  $("continueBtn").addEventListener("click", () => showSection("studentForm"));
   $("backIntroBtn").addEventListener("click", () => showSection("intro"));
   $("startBtn").addEventListener("click", startQuiz);
+  $("studentCode").addEventListener("keydown", e => { if (e.key === "Enter") startQuiz(); });
 
   $("nextBtn").addEventListener("click", nextQuestion);
   $("previousBtn").addEventListener("click", previousQuestion);
@@ -1117,6 +763,8 @@ document.addEventListener("DOMContentLoaded", () => {
   $("printBtn").addEventListener("click", () => window.print());
   $("saveBtn").addEventListener("click", saveToDrive);
   $("restartBtn").addEventListener("click", restartAssessment);
+
+  updateSaveButton();
 });
 </script>
 
